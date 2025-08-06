@@ -103,6 +103,11 @@ select option {
   margin-top: 1rem;
 }
 
+.app-title__js {
+  font-size: 1rem;
+  opacity: 0.5;
+}
+
 .app-subtitle {
   opacity: 0.7;
   font-size: 1.1rem;

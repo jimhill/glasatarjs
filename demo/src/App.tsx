@@ -62,7 +62,9 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <Icon />
-        <h1 className="app-title">Glasatar</h1>
+        <h1 className="app-title">
+          Glasatar <span className="app-title__js">js</span>
+        </h1>
         <p className="app-subtitle">
           A voice-reactive avatar seen through realistic obscure glass
         </p>

@@ -1,4 +1,4 @@
-# Glasatar
+# Glasatar (glasatarjs)
 
 A WebGL-based voice visualizer that creates realistic privacy glass effects, distorting and blurring background content with audio-reactive animations.
 
