@@ -232,27 +232,34 @@ export default {
     });
     this.renderer.start();
   },
-  
+
   beforeUnmount() {
     this.renderer?.dispose();
   },
-  
-  template: '<canvas ref="canvas"></canvas>'
+
+  template: '<canvas ref="canvas"></canvas>',
 };
 ```
 
 ### Angular Example
 
 ```typescript
-import { Component, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  ViewChild,
+  ElementRef,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { GlastarJS } from 'glasatar/core';
 
 @Component({
   selector: 'app-glasatar',
-  template: '<canvas #canvas></canvas>'
+  template: '<canvas #canvas></canvas>',
 })
 export class GlasatarComponent implements OnInit, OnDestroy {
-  @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('canvas', { static: true })
+  canvasRef!: ElementRef<HTMLCanvasElement>;
   private renderer?: GlastarJS;
 
   ngOnInit() {
@@ -275,10 +282,10 @@ export class GlasatarComponent implements OnInit, OnDestroy {
 <script>
   import { onMount, onDestroy } from 'svelte';
   import { GlastarJS } from 'glasatar/core';
-  
+
   let canvas;
   let renderer;
-  
+
   onMount(() => {
     renderer = new GlastarJS(canvas, {
       texture: 'arctic',
@@ -286,7 +293,7 @@ export class GlasatarComponent implements OnInit, OnDestroy {
     });
     renderer.start();
   });
-  
+
   onDestroy(() => {
     renderer?.dispose();
   });

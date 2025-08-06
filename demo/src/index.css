@@ -380,7 +380,9 @@ select option {
 .github-link {
   color: #ffffff;
   opacity: 0.7;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   display: flex;
   align-items: center;
 }

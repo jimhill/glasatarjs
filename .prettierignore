@@ -1,49 +1,24 @@
-# Dependencies
-node_modules/
-
 # Build outputs
 dist/
 dist-demo/
-build/
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
 coverage/
+node_modules/
 
-# Generated files
-*.tgz
-*.tar.gz
+# Config files
+*.config.js
+*.config.ts
 
-# Package manager locks
+# Lock files
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# IDE files
-.vscode/
-.idea/
+# Generated files
+*.d.ts
+*.min.js
+*.map
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-
-# Documentation builds
-docs-build/
-
-# Generated types
-*.d.ts.map
+# Other
+.git/
+.gitignore
+LICENSE

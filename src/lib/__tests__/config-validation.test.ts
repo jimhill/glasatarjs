@@ -14,9 +14,7 @@ const createDefaultConfig = (): GlasatarConfig => ({
 });
 
 // Helper function to validate config structure
-const validateConfigStructure = (
-  config: Partial<GlasatarConfig>
-): boolean => {
+const validateConfigStructure = (config: Partial<GlasatarConfig>): boolean => {
   const validTextures = ['reeded', 'frosted', 'rain', 'forest'] as const;
   const validBackgroundTypes = [
     'solid',

@@ -40,10 +40,7 @@ export class GlastarJS {
     forest: 7,
   };
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    config: Partial<GlasatarConfig> = {}
-  ) {
+  constructor(canvas: HTMLCanvasElement, config: Partial<GlasatarConfig> = {}) {
     this.canvas = canvas;
     this.config = {
       width: config.width || 800,
