@@ -5,8 +5,8 @@
     "declaration": true,
     "declarationMap": true,
     "outDir": "./dist",
-    "rootDir": "./src/lib"
+    "rootDir": "./src"
   },
-  "include": ["src/lib/**/*"],
+  "include": ["src/lib/**/*", "src/components/**/*", "src/index.ts"],
   "exclude": ["src/demo", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }
