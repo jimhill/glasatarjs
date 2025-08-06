@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'npm'
       
       - name: Install system dependencies for canvas
         run: |
@@ -30,10 +31,7 @@ jobs:
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       
       - name: Install dependencies
-        run: |
-          # Fix for rollup optional dependencies issue
-          rm -f package-lock.json
-          npm install
+        run: npm ci
       
       - name: Check formatting
         run: npm run format:check
@@ -66,6 +64,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
       
       - name: Install system dependencies for canvas
         run: |
@@ -73,10 +72,7 @@ jobs:
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       
       - name: Install dependencies
-        run: |
-          # Fix for rollup optional dependencies issue
-          rm -f package-lock.json
-          npm install
+        run: npm ci
       
       - name: Build library
         run: npm run build:lib
@@ -107,6 +103,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
       
       - name: Install system dependencies for canvas
@@ -115,10 +112,7 @@ jobs:
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       
       - name: Install dependencies
-        run: |
-          # Fix for rollup optional dependencies issue
-          rm -f package-lock.json
-          npm install
+        run: npm ci
       
       - name: Build package
         run: npm run build:lib
@@ -186,6 +180,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
       
       - name: Install system dependencies for canvas
         run: |
@@ -193,10 +188,7 @@ jobs:
           sudo apt-get install -y build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       
       - name: Install dependencies
-        run: |
-          # Fix for rollup optional dependencies issue
-          rm -f package-lock.json
-          npm install
+        run: npm ci
       
       - name: Build demo
         run: npm run build:demo

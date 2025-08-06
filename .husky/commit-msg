@@ -1,6 +1,5 @@
 #\!/bin/sh
-# Check if commit message follows some basic format
-# This is a simple check - you can make it more sophisticated
+# Check if commit message follows conventional commit format
 commit_regex="^(feat|fix|docs|style|refactor|test|chore|ci|build|perf)(\(.+\))?: .{1,50}"
 
 if \! grep -qE "$commit_regex" "$1"; then
