@@ -5,7 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   root: './demo',
-  base: process.env.NODE_ENV === 'production' ? '/glasatarjs/' : '/',
+  base: '/',
   build: {
     outDir: '../dist-demo',
   },
