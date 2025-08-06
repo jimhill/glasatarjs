@@ -44,6 +44,7 @@
     "@vitest/ui": "^3.2.4",
     "canvas": "^2.11.2",
     "eslint": "^8.45.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "jsdom": "^23.0.0",

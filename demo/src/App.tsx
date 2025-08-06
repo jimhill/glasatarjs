@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Glasatar, TextureType } from 'glasatar';
+import { Glasatar, TextureType } from '../../src';
 import Icon from './Icon';
 
 function App() {
@@ -315,7 +315,7 @@ function App() {
                 </label>
               </div>
               <p className="control-description">
-                Avatar becomes transparent when there's no sound or very low
+                Avatar becomes transparent when there&apos;s no sound or very low
                 audio
               </p>
             </div>
@@ -517,7 +517,7 @@ function App() {
         <h3 className="info-title">How it works:</h3>
         <ul className="info-list">
           <li>
-            The <strong>glass texture</strong> is fixed and doesn't change
+            The <strong>glass texture</strong> is fixed and doesn&apos;t change
           </li>
           <li>
             Behind the glass is a colored <strong>avatar circle</strong> that

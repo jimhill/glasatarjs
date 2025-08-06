@@ -96,7 +96,7 @@ export class GlastarJS {
 
   private createShader(type: number, source: string): WebGLShader | null {
     const shader = this.gl.createShader(type);
-    if (!shader) return null;
+    if (!shader) {return null;}
 
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
@@ -332,7 +332,7 @@ export class GlastarJS {
         ctx.fillRect(0, 0, width, height);
         break;
 
-      case 'radial-gradient':
+      case 'radial-gradient': {
         const radialGradient = ctx.createRadialGradient(
           centerX,
           centerY,
@@ -352,8 +352,9 @@ export class GlastarJS {
         ctx.fillStyle = radialGradient;
         ctx.fillRect(0, 0, width, height);
         break;
+      }
 
-      case 'linear-gradient':
+      case 'linear-gradient': {
         const angle =
           ((this.config.backgroundGradient!.angle || 0) * Math.PI) / 180;
         const diagonal =
@@ -384,6 +385,7 @@ export class GlastarJS {
         ctx.fillStyle = linearGradient;
         ctx.fillRect(0, 0, width, height);
         break;
+      }
 
       case 'image':
         if (
@@ -488,7 +490,7 @@ export class GlastarJS {
       'backgroundRotationSpeed',
       'backgroundScale',
     ];
-    if (backgroundKeys.some(key => config.hasOwnProperty(key))) {
+    if (backgroundKeys.some(key => Object.prototype.hasOwnProperty.call(config, key))) {
       this.backgroundDirty = true;
     }
 
@@ -510,7 +512,7 @@ export class GlastarJS {
   }
 
   private render = (): void => {
-    if (!this.program || this.isDisposed) return;
+    if (!this.program || this.isDisposed) {return;}
 
     // Get audio data
     let audioData: AudioData = {

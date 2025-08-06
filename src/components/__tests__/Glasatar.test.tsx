@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Glasatar } from '../Glasatar';
 import { GlastarJS } from '../../lib';
@@ -15,16 +15,6 @@ vi.mock('../../lib', () => ({
     resize: vi.fn(),
   })),
 }));
-
-// Mock canvas
-const mockCanvas = {
-  getContext: vi.fn().mockReturnValue({
-    fillRect: vi.fn(),
-    clearRect: vi.fn(),
-  }),
-  width: 800,
-  height: 600,
-};
 
 // Mock MediaStream
 const mockStream = {
@@ -276,7 +266,7 @@ describe('Glasatar', () => {
   });
 
   it('maintains renderer instance across re-renders', () => {
-    const { container, rerender } = render(<Glasatar />);
+    const { rerender } = render(<Glasatar />);
 
     // Should only create one instance
     expect(GlastarJS).toHaveBeenCalledTimes(1);
