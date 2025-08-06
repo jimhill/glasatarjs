@@ -140,26 +140,22 @@ jobs:
       
       - name: Create GitHub Release
         if: steps.version-check.outputs.should-publish == 'true'
-        uses: actions/create-release@v1
+        run: |
+          gh release create v${{ steps.version-check.outputs.package-version }} \
+            --title "Release v${{ steps.version-check.outputs.package-version }}" \
+            --notes "## Changes in v${{ steps.version-check.outputs.package-version }}
+
+          See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+
+          ### Installation
+          \`\`\`bash
+          npm install @jimhill/glasatarjs@${{ steps.version-check.outputs.package-version }}
+          \`\`\`
+
+          ### Usage
+          See [README.md](README.md) for usage instructions."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.version-check.outputs.package-version }}
-          release_name: Release v${{ steps.version-check.outputs.package-version }}
-          draft: false
-          prerelease: false
-          body: |
-            ## Changes in v${{ steps.version-check.outputs.package-version }}
-            
-            See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
-            
-            ### Installation
-            ```bash
-            npm install @jimhill/glasatarjs@${{ steps.version-check.outputs.package-version }}
-            ```
-            
-            ### Usage
-            See [README.md](README.md) for usage instructions.
 
   deploy-demo:
     name: Deploy Demo to GitHub Pages
