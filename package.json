@@ -1,6 +1,6 @@
 {
   "name": "@jimhill/glasatarjs",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A beautiful WebGL-based voice visualizer that recreates the effect of textured privacy glass",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -79,8 +79,6 @@
   },
   "files": [
     "dist",
-    "src/lib",
-    "src/components",
     "core.js",
     "core.d.ts",
     "README.md"
