@@ -134,7 +134,7 @@ jobs:
       
       - name: Publish to NPM
         if: steps.version-check.outputs.should-publish == 'true'
-        run: npm publish
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       
