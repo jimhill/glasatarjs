@@ -120,7 +120,7 @@ jobs:
       - name: Check if version changed
         id: version-check
         run: |
-          CURRENT_VERSION=$(npm view glasatar version 2>/dev/null || echo "0.0.0")
+          CURRENT_VERSION=$(npm view @jimhill/glasatarjs version 2>/dev/null || echo "0.0.0")
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           echo "current-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
           echo "package-version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
@@ -155,7 +155,7 @@ jobs:
             
             ### Installation
             ```bash
-            npm install glasatar@${{ steps.version-check.outputs.package-version }}
+            npm install @jimhill/glasatarjs@${{ steps.version-check.outputs.package-version }}
             ```
             
             ### Usage

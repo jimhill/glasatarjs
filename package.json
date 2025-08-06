@@ -1,5 +1,5 @@
 {
-  "name": "glasatar",
+  "name": "@jimhill/glasatarjs",
   "version": "1.0.0",
   "description": "A beautiful WebGL-based voice visualizer that recreates the effect of textured privacy glass",
   "main": "dist/index.js",

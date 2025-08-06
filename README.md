@@ -16,13 +16,13 @@ A WebGL-based voice visualizer that creates realistic privacy glass effects, dis
 ## Installation
 
 ```bash
-npm install glasatar
+npm install @jimhill/glasatarjs
 ```
 
 or
 
 ```bash
-yarn add glasatar
+yarn add @jimhill/glasatarjs
 ```
 
 ### For Core Library Only (No React)
@@ -30,7 +30,7 @@ yarn add glasatar
 If you only need the core WebGL library without React dependencies:
 
 ```bash
-npm install glasatar --no-optional
+npm install @jimhill/glasatarjs --no-optional
 ```
 
 ## Quick Start
@@ -38,7 +38,7 @@ npm install glasatar --no-optional
 ### React Component
 
 ```tsx
-import { Glasatar } from 'glasatar';
+import { Glasatar } from '@jimhill/glasatarjs';
 
 function App() {
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
@@ -73,9 +73,9 @@ function App() {
 ### Vanilla JavaScript / Core Library
 
 ```javascript
-import { GlastarJS } from 'glasatar/core';
+import { GlastarJS } from '@jimhill/glasatarjs/core';
 // Or if using the full package:
-// import { GlastarJS } from 'glasatar';
+// import { GlastarJS } from '@jimhill/glasatarjs';
 
 // Create canvas element
 const canvas = document.getElementById('visualizer');
@@ -222,7 +222,7 @@ MIT
 ### Vue.js Example
 
 ```javascript
-import { GlastarJS } from 'glasatar/core';
+import { GlastarJS } from '@jimhill/glasatarjs/core';
 
 export default {
   mounted() {
@@ -251,7 +251,7 @@ import {
   OnInit,
   OnDestroy,
 } from '@angular/core';
-import { GlastarJS } from 'glasatar/core';
+import { GlastarJS } from '@jimhill/glasatarjs/core';
 
 @Component({
   selector: 'app-glasatar',
@@ -281,7 +281,7 @@ export class GlasatarComponent implements OnInit, OnDestroy {
 ```svelte
 <script>
   import { onMount, onDestroy } from 'svelte';
-  import { GlastarJS } from 'glasatar/core';
+  import { GlastarJS } from '@jimhill/glasatarjs/core';
 
   let canvas;
   let renderer;

@@ -17,11 +17,11 @@ git commit -m "Deploy demo to GitHub Pages"
 
 # Push to gh-pages branch
 echo "Deploying to GitHub Pages..."
-git push -f https://github.com/jimhill/glasatarjs.git main:gh-pages
+git push -f https://github.com/jimhill/speech-visualiser.git main:gh-pages
 
 # Clean up
 cd ..
 rm -rf gh-pages-temp
 
 echo "Demo deployed successfully!"
-echo "Visit https://jimhill.github.io/glasatarjs/ to see the demo"
+echo "Visit https://jimhill.github.io/speech-visualiser/ to see the demo"
