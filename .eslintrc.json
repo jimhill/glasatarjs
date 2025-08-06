@@ -49,6 +49,7 @@
     "dist-demo/",
     "node_modules/",
     "coverage/",
-    "*.d.ts"
+    "*.d.ts",
+    "core.js"
   ]
 }
