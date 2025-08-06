@@ -1,0 +1,12 @@
+#\!/bin/sh
+# Check if commit message follows some basic format
+# This is a simple check - you can make it more sophisticated
+commit_regex="^(feat|fix|docs|style|refactor|test|chore|ci|build|perf)(\(.+\))?: .{1,50}"
+
+if \! grep -qE "$commit_regex" "$1"; then
+  echo "❌ Invalid commit message format\!"
+  echo "Please use: type(scope): description"
+  echo "Types: feat, fix, docs, style, refactor, test, chore, ci, build, perf"
+  echo "Example: feat(auth): add user login functionality"
+  exit 1
+fi

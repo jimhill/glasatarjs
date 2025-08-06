@@ -15,11 +15,13 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
     "security-check": "npm audit --audit-level moderate",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "deploy:demo": "./scripts/deploy-demo.sh"
+    "deploy:demo": "./scripts/deploy-demo.sh",
+    "prepare": "husky"
   },
   "keywords": [
     "webgl",
@@ -47,7 +49,9 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.1.7",
     "jsdom": "^23.0.0",
+    "lint-staged": "^16.1.4",
     "prettier": "^3.6.2",
     "typescript": "^5.0.0",
     "vite": "^7.0.6",
@@ -73,6 +77,15 @@
     "core.d.ts",
     "README.md"
   ],
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",

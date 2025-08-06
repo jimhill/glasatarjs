@@ -211,7 +211,7 @@ glasatar/
 - Chrome/Edge 80+
 - Firefox 75+
 - Safari 13.1+
-- Requires WebGL support
+- Requires WebGL support and microphone permissions
 
 ## License
 
