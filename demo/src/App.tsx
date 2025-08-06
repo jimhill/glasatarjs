@@ -315,8 +315,8 @@ function App() {
                 </label>
               </div>
               <p className="control-description">
-                Avatar becomes transparent when there&apos;s no sound or very low
-                audio
+                Avatar becomes transparent when there&apos;s no sound or very
+                low audio
               </p>
             </div>
           </div>

@@ -96,7 +96,9 @@ export class GlastarJS {
 
   private createShader(type: number, source: string): WebGLShader | null {
     const shader = this.gl.createShader(type);
-    if (!shader) {return null;}
+    if (!shader) {
+      return null;
+    }
 
     this.gl.shaderSource(shader, source);
     this.gl.compileShader(shader);
@@ -490,7 +492,11 @@ export class GlastarJS {
       'backgroundRotationSpeed',
       'backgroundScale',
     ];
-    if (backgroundKeys.some(key => Object.prototype.hasOwnProperty.call(config, key))) {
+    if (
+      backgroundKeys.some(key =>
+        Object.prototype.hasOwnProperty.call(config, key)
+      )
+    ) {
       this.backgroundDirty = true;
     }
 
@@ -512,7 +518,9 @@ export class GlastarJS {
   }
 
   private render = (): void => {
-    if (!this.program || this.isDisposed) {return;}
+    if (!this.program || this.isDisposed) {
+      return;
+    }
 
     // Get audio data
     let audioData: AudioData = {

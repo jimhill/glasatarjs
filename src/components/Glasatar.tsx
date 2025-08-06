@@ -17,7 +17,9 @@ export const Glasatar: React.FC<GlasatarProps> = ({
   const rendererRef = useRef<GlastarJS | null>(null);
 
   useEffect(() => {
-    if (!canvasRef.current) {return;}
+    if (!canvasRef.current) {
+      return;
+    }
 
     // Create renderer
     rendererRef.current = new GlastarJS(canvasRef.current, config);
@@ -33,7 +35,9 @@ export const Glasatar: React.FC<GlasatarProps> = ({
 
   // Handle audio stream changes
   useEffect(() => {
-    if (!rendererRef.current) {return;}
+    if (!rendererRef.current) {
+      return;
+    }
 
     if (audioStream) {
       rendererRef.current.connectAudioStream(audioStream);
@@ -42,13 +46,17 @@ export const Glasatar: React.FC<GlasatarProps> = ({
 
   // Handle config updates
   useEffect(() => {
-    if (!rendererRef.current) {return;}
+    if (!rendererRef.current) {
+      return;
+    }
     rendererRef.current.updateConfig(config);
   }, [JSON.stringify(config)]); // Use JSON stringification to avoid massive dependency array
 
   // Handle resize
   useEffect(() => {
-    if (!rendererRef.current) {return;}
+    if (!rendererRef.current) {
+      return;
+    }
     if (config.width !== undefined && config.height !== undefined) {
       rendererRef.current.resize(config.width, config.height);
     }
