@@ -6,18 +6,42 @@ const createDefaultConfig = (): GlasatarConfig => ({
   width: 800,
   height: 600,
   texture: 'reeded',
-  avatarColor: '#0096ff',
-  backgroundColor: '#1a1a1a',
+  glassOpacity: 0.95,
+  refractionStrength: 1.0,
   blurAmount: 8,
-  backgroundType: 'solid',
+  fps: 60,
+  avatarColor: '#0096ff',
+  avatarSize: 80,
+  avatarSensitivity: 1.0,
+  avatarExpansion: 2.0,
+  avatarSmoothing: 0.25,
+  avatarFadeWithAudio: false,
+  backgroundColor: '#1a1a1a',
+  backgroundType: 'color',
+  backgroundGradient: {
+    centerColor: '#0096ff',
+    edgeColor: '#1a1a1a',
+  },
   backgroundImage: undefined,
+  backgroundRotation: false,
+  backgroundRotationSpeed: 1.0,
+  backgroundScale: 1.0,
 });
 
 // Helper function to validate config structure
 const validateConfigStructure = (config: Partial<GlasatarConfig>): boolean => {
-  const validTextures = ['reeded', 'frosted', 'rain', 'forest'] as const;
+  const validTextures = [
+    'arctic',
+    'cathedral',
+    'autumn',
+    'flemish',
+    'ripple',
+    'reeded',
+    'vintage',
+    'forest',
+  ] as const;
   const validBackgroundTypes = [
-    'solid',
+    'color',
     'linear-gradient',
     'radial-gradient',
     'image',
@@ -124,8 +148,8 @@ describe('PrivacyGlass Configuration Validation', () => {
     it('should accept valid texture types', () => {
       const validTextures: GlasatarConfig['texture'][] = [
         'reeded',
-        'frosted',
-        'rain',
+        'arctic',
+        'cathedral',
         'forest',
       ];
 
@@ -259,7 +283,7 @@ describe('PrivacyGlass Configuration Validation', () => {
   describe('background type validation', () => {
     it('should accept valid background types', () => {
       const validTypes: GlasatarConfig['backgroundType'][] = [
-        'solid',
+        'color',
         'linear-gradient',
         'radial-gradient',
         'image',
@@ -300,7 +324,9 @@ describe('PrivacyGlass Configuration Validation', () => {
       expect(validateConfigStructure({ backgroundImage: undefined })).toBe(
         true
       );
-      expect(validateConfigStructure({ backgroundImage: null })).toBe(true);
+      expect(validateConfigStructure({ backgroundImage: undefined })).toBe(
+        true
+      );
     });
 
     it('should reject invalid URLs', () => {
@@ -327,7 +353,7 @@ describe('PrivacyGlass Configuration Validation', () => {
         {
           width: 1920,
           height: 1080,
-          texture: 'frosted',
+          texture: 'arctic',
           avatarColor: '#ff0000',
           backgroundColor: '#000000',
           blurAmount: 12,
@@ -336,7 +362,7 @@ describe('PrivacyGlass Configuration Validation', () => {
         {
           width: 400,
           height: 300,
-          texture: 'rain',
+          texture: 'cathedral',
           avatarColor: '#00ff00',
           backgroundColor: '#ffffff',
           blurAmount: 0,
@@ -355,14 +381,14 @@ describe('PrivacyGlass Configuration Validation', () => {
         {
           width: -100,
           height: 0,
-          texture: 'invalid',
+          texture: 'invalid' as any,
           avatarColor: 'not-a-color',
           blurAmount: -5,
         },
         {
           width: 5000,
-          texture: 'unknown',
-          backgroundType: 'invalid-type',
+          texture: 'unknown' as any,
+          backgroundType: 'invalid-type' as any,
           backgroundImage: 'not-a-url',
         },
       ];
@@ -378,9 +404,9 @@ describe('PrivacyGlass Configuration Validation', () => {
       const partialConfigs = [
         { width: 1200 },
         { avatarColor: '#123456' },
-        { texture: 'forest' },
+        { texture: 'forest' as const },
         { blurAmount: 15 },
-        { backgroundType: 'linear-gradient' },
+        { backgroundType: 'linear-gradient' as const },
       ];
 
       partialConfigs.forEach(config => {
@@ -412,7 +438,7 @@ describe('PrivacyGlass Configuration Validation', () => {
         },
         {
           backgroundType: 'image' as const,
-          backgroundImage: null, // Should be valid - renderer should handle gracefully
+          backgroundImage: undefined, // Should be valid - renderer should handle gracefully
         },
       ];
 

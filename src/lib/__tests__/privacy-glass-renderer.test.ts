@@ -27,7 +27,7 @@ describe('GlastarJS', () => {
   describe('constructor', () => {
     it('should initialize with default config', () => {
       expect(() => {
-        renderer = new Glasatar(mockCanvas);
+        renderer = new GlastarJS(mockCanvas);
       }).not.toThrow();
     });
 
@@ -41,7 +41,7 @@ describe('GlastarJS', () => {
       };
 
       expect(() => {
-        renderer = new Glasatar(mockCanvas, config);
+        renderer = new GlastarJS(mockCanvas, config);
       }).not.toThrow();
     });
 
@@ -51,12 +51,12 @@ describe('GlastarJS', () => {
       mockCanvas.getContext = mockGetContext;
 
       expect(() => {
-        renderer = new Glasatar(mockCanvas);
+        renderer = new GlastarJS(mockCanvas);
       }).toThrow('WebGL not supported');
     });
 
     it('should create background canvas with correct dimensions', () => {
-      renderer = new Glasatar(mockCanvas, {
+      renderer = new GlastarJS(mockCanvas, {
         width: 1000,
         height: 600,
       });
@@ -70,7 +70,7 @@ describe('GlastarJS', () => {
 
   describe('memory leak prevention', () => {
     it('should clean up WebGL shaders after linking', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
       const mockGL = mockCanvas.getContext('webgl') as any;
       const deleteShaderSpy = vi.spyOn(mockGL, 'deleteShader');
 
@@ -83,7 +83,7 @@ describe('GlastarJS', () => {
     });
 
     it('should properly dispose of all WebGL resources', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
 
       // Test that dispose completes without errors
       expect(() => {
@@ -95,7 +95,7 @@ describe('GlastarJS', () => {
     });
 
     it('should clean up background image resources', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
 
       // Set a background image
       renderer.updateConfig({
@@ -114,7 +114,7 @@ describe('GlastarJS', () => {
     });
 
     it('should prevent memory leaks when updating background images', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
 
       // Set initial image
       renderer.updateConfig({
@@ -137,7 +137,7 @@ describe('GlastarJS', () => {
     });
 
     it('should handle rapid config updates without leaking', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
 
       // Rapid config updates
       for (let i = 0; i < 100; i++) {
@@ -153,7 +153,7 @@ describe('GlastarJS', () => {
     });
 
     it('should null all references on dispose', () => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
 
       renderer.dispose();
 
@@ -169,7 +169,7 @@ describe('GlastarJS', () => {
 
   describe('performance optimizations', () => {
     beforeEach(() => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
     });
 
     it('should implement dirty flag for background redraw', () => {
@@ -227,7 +227,7 @@ describe('GlastarJS', () => {
 
   describe('render safety', () => {
     beforeEach(() => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
     });
 
     it('should prevent rendering after disposal', () => {
@@ -269,7 +269,7 @@ describe('GlastarJS', () => {
 
   describe('audio stream handling', () => {
     beforeEach(() => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
     });
 
     it('should connect audio stream without errors', () => {
@@ -297,7 +297,7 @@ describe('GlastarJS', () => {
 
   describe('configuration updates', () => {
     beforeEach(() => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
     });
 
     it('should update configuration without errors', () => {
@@ -337,7 +337,7 @@ describe('GlastarJS', () => {
 
   describe('resize handling', () => {
     beforeEach(() => {
-      renderer = new Glasatar(mockCanvas);
+      renderer = new GlastarJS(mockCanvas);
     });
 
     it('should update canvas dimensions', () => {

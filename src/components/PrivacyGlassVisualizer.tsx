@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Glasatar as GlasatarRenderer, GlasatarConfig } from '../lib';
+import { GlastarJS as GlasatarRenderer, GlasatarConfig } from '../lib';
 
 export interface GlasatarProps extends Partial<GlasatarConfig> {
   audioStream?: MediaStream | null;
