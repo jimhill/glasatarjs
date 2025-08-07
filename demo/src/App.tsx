@@ -10,10 +10,10 @@ function App() {
   const [refractionStrength, setRefractionStrength] = useState(20.0);
   const [blurAmount, setBlurAmount] = useState(15.0);
   const [avatarColor, setAvatarColor] = useState('#00c7fc');
-  const [avatarSize, setAvatarSize] = useState(37);
-  const [avatarSensitivity, setAvatarSensitivity] = useState(1.8);
-  const [avatarExpansion, setAvatarExpansion] = useState(20.0);
-  const [avatarSmoothing, setAvatarSmoothing] = useState(0.23);
+  const [avatarSize, setAvatarSize] = useState(19);
+  const [avatarSensitivity, setAvatarSensitivity] = useState(1.2);
+  const [avatarExpansion, setAvatarExpansion] = useState(27);
+  const [avatarSmoothing, setAvatarSmoothing] = useState(0.34);
   const [avatarFadeWithAudio, setAvatarFadeWithAudio] = useState(true);
   const [avatarState, setAvatarState] = useState<AvatarState>('speaking');
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('square');
@@ -795,6 +795,10 @@ function MyApp() {
         width={300}
         texture="reeded"
         avatarColor="#00c7fc"
+        avatarSize={19} // Size in pixels
+        avatarSensitivity={1.2} // Voice sensitivity multiplier
+        avatarExpansion={27} // Maximum expansion in pixels
+        avatarSmoothing={0.34} // Animation smoothing factor
         avatarState="speaking" // 'speaking', 'listening', or 'thinking'
         avatarShape="circle" // 'square' or 'circle'
         listeningPulseBase={50} // Base width of listening glow
