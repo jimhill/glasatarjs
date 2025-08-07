@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Glasatar, TextureType } from '../../src';
+import { Glasatar, TextureType, AvatarState, AvatarShape } from '../../src';
 import Icon from './Icon';
 import { CodeBlock } from './CodeBlock';
 
@@ -15,6 +15,8 @@ function App() {
   const [avatarExpansion, setAvatarExpansion] = useState(49.4);
   const [avatarSmoothing, setAvatarSmoothing] = useState(0.23);
   const [avatarFadeWithAudio, setAvatarFadeWithAudio] = useState(true);
+  const [avatarState, setAvatarState] = useState<AvatarState>('speaking');
+  const [avatarShape, setAvatarShape] = useState<AvatarShape>('square');
   const [backgroundColor, setBackgroundColor] = useState('#1a1a2e');
   const [backgroundType, setBackgroundType] = useState<
     'color' | 'radial-gradient' | 'linear-gradient' | 'image'
@@ -88,7 +90,9 @@ function App() {
         </p>
       </header>
 
-      <div className="visualizer-container">
+      <div
+        className={`visualizer-container ${avatarShape === 'circle' ? 'visualizer-container--circle' : ''}`}
+      >
         <Glasatar
           audioStream={audioStream}
           width={400}
@@ -103,6 +107,8 @@ function App() {
           avatarExpansion={avatarExpansion}
           avatarSmoothing={avatarSmoothing}
           avatarFadeWithAudio={avatarFadeWithAudio}
+          avatarState={avatarState}
+          avatarShape={avatarShape}
           backgroundColor={backgroundColor}
           backgroundType={backgroundType}
           backgroundGradient={{
@@ -116,7 +122,7 @@ function App() {
           backgroundRotation={backgroundRotation}
           backgroundRotationSpeed={backgroundRotationSpeed}
           backgroundScale={backgroundScale}
-          className="visualizer-canvas"
+          className={`visualizer-canvas ${avatarShape === 'circle' ? 'visualizer-canvas--circle' : ''}`}
         />
 
         <div className="recording-status">
@@ -220,6 +226,45 @@ function App() {
           <h3 className="control-section__title">Avatar Settings</h3>
 
           <div className="control-section__content">
+            {/* Avatar Shape */}
+            <div>
+              <label className="control-label">Avatar Shape</label>
+              <select
+                value={avatarShape}
+                onChange={e => setAvatarShape(e.target.value as AvatarShape)}
+                className="select-input"
+              >
+                <option value="square">Square</option>
+                <option value="circle">Circle</option>
+              </select>
+              <p className="control-description">
+                Circle shapes work well for traditional avatars, square shapes
+                for modern UI elements
+              </p>
+            </div>
+
+            {/* Avatar State */}
+            <div>
+              <label htmlFor="avatarState" className="control-label">
+                Avatar State
+              </label>
+              <select
+                id="avatarState"
+                value={avatarState}
+                onChange={e => setAvatarState(e.target.value as AvatarState)}
+                className="select-input"
+              >
+                <option value="speaking">Speaking</option>
+                <option value="listening">Listening (coming soon)</option>
+                <option value="thinking">Thinking</option>
+              </select>
+              <p className="control-description">
+                Controls the avatar&apos;s visual state. Speaking mode responds
+                to audio input, listening shows a subtle pulse, and thinking
+                displays a rotating border animation.
+              </p>
+            </div>
+
             {/* Avatar Color */}
             <div>
               <label className="control-label">Avatar Color</label>
@@ -594,6 +639,8 @@ function MyApp() {
         height={500}
         texture="reeded"
         avatarColor="#00c7fc"
+        avatarState="speaking" // 'speaking', 'listening', or 'thinking'
+        avatarShape="circle" // 'square' or 'circle'
         backgroundType="linear-gradient"
         backgroundGradient={{
           centerColor: "#c4bc00",
@@ -653,7 +700,10 @@ function MyApp() {
                 <td>
                   <code>800</code>
                 </td>
-                <td>Canvas width in pixels</td>
+                <td>
+                  Canvas width/size in pixels (acts as size when avatarShape is
+                  set)
+                </td>
               </tr>
               <tr>
                 <td>
@@ -665,7 +715,9 @@ function MyApp() {
                 <td>
                   <code>600</code>
                 </td>
-                <td>Canvas height in pixels</td>
+                <td>
+                  Canvas height (ignored when avatarShape is circle or square)
+                </td>
               </tr>
 
               <tr>
@@ -746,6 +798,39 @@ function MyApp() {
               </tr>
               <tr>
                 <td>
+                  <code>avatarState</code>
+                </td>
+                <td>
+                  <code>
+                    &apos;speaking&apos; | &apos;listening&apos; |
+                    &apos;thinking&apos;
+                  </code>
+                </td>
+                <td>
+                  <code>&apos;speaking&apos;</code>
+                </td>
+                <td>
+                  Avatar visual state - speaking responds to audio, listening
+                  shows pulse, thinking shows rotating border
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarShape</code>
+                </td>
+                <td>
+                  <code>&apos;square&apos; | &apos;circle&apos;</code>
+                </td>
+                <td>
+                  <code>&apos;square&apos;</code>
+                </td>
+                <td>
+                  Avatar shape - circle for traditional avatars, square for
+                  modern UI elements
+                </td>
+              </tr>
+              <tr>
+                <td>
                   <code>avatarColor</code>
                 </td>
                 <td>
@@ -816,7 +901,6 @@ function MyApp() {
                 </td>
                 <td>Avatar becomes transparent when silent</td>
               </tr>
-
               <tr>
                 <td colSpan={4} className="section-header">
                   Background

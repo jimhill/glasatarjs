@@ -8,10 +8,13 @@ export type TextureType =
   | 'vintage'
   | 'forest';
 
+export type AvatarState = 'speaking' | 'listening' | 'thinking';
+export type AvatarShape = 'square' | 'circle';
+
 export interface GlasatarConfig {
-  // Canvas dimensions - should typically be specified
-  width?: number; // defaults to 800
-  height?: number; // defaults to 600
+  // Canvas dimensions
+  width?: number; // defaults to 800 - when avatarShape is set, this acts as size for both dimensions
+  height?: number; // defaults to 600 - ignored when avatarShape is 'circle' or 'square'
 
   // Glass effect settings (optional with sensible defaults)
   texture?: TextureType; // defaults to 'arctic'
@@ -27,6 +30,8 @@ export interface GlasatarConfig {
   avatarExpansion?: number; // defaults to 2.0
   avatarSmoothing?: number; // defaults to 0.25
   avatarFadeWithAudio?: boolean; // defaults to false
+  avatarState?: AvatarState; // defaults to 'speaking'
+  avatarShape?: AvatarShape; // defaults to 'square'
 
   // Background configuration (optional with sensible defaults)
   backgroundColor?: string; // defaults to '#000000'

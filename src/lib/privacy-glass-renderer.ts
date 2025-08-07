@@ -3,6 +3,8 @@ import {
   AudioData,
   ShaderUniforms,
   TextureType,
+  AvatarState,
+  AvatarShape,
 } from './types';
 import { vertexShaderSource, fragmentShaderSource } from './shaders';
 import { AudioAnalyzer } from './audio-analyzer';
@@ -26,6 +28,8 @@ export class GlastarJS {
     avatarExpansion: number;
     avatarSmoothing: number;
     avatarFadeWithAudio: boolean;
+    avatarState: AvatarState;
+    avatarShape: AvatarShape;
     backgroundColor: string;
     backgroundType: 'color' | 'radial-gradient' | 'linear-gradient' | 'image';
     backgroundGradient: {
@@ -53,6 +57,12 @@ export class GlastarJS {
   private lastBackgroundConfig: string = '';
   private textureNeedsUpdate: boolean = true;
   private lastAvatarSize: number = 0;
+  private thinkingAnimationTime: number = 0;
+  private currentState: AvatarState = 'speaking';
+  private targetState: AvatarState = 'speaking';
+  private stateTransitionProgress: number = 1; // 0 to 1, 1 means fully transitioned
+  private stateTransitionDuration: number = 500; // milliseconds
+  private stateTransitionStartTime: number = 0;
 
   private static readonly TEXTURE_MAP: Record<TextureType, number> = {
     arctic: 0,
@@ -67,9 +77,17 @@ export class GlastarJS {
 
   constructor(canvas: HTMLCanvasElement, config: Partial<GlasatarConfig> = {}) {
     this.canvas = canvas;
+
+    // When avatarShape is defined, enforce square dimensions using width
+    const width = config.width || 800;
+    const height =
+      config.avatarShape === 'circle' || config.avatarShape === 'square'
+        ? width
+        : config.height || 600;
+
     this.config = {
-      width: config.width || 800,
-      height: config.height || 600,
+      width,
+      height,
       texture: config.texture || 'arctic',
       glassOpacity: config.glassOpacity || 0.95,
       refractionStrength: config.refractionStrength || 1.0,
@@ -81,6 +99,8 @@ export class GlastarJS {
       avatarExpansion: config.avatarExpansion || 2.0,
       avatarSmoothing: config.avatarSmoothing || 0.25,
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
+      avatarState: config.avatarState || 'speaking',
+      avatarShape: config.avatarShape || 'square',
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
       backgroundGradient: {
@@ -242,8 +262,30 @@ export class GlastarJS {
     const width = this.backgroundCanvas.width;
     const height = this.backgroundCanvas.height;
 
+    // Update thinking animation time
+    this.thinkingAnimationTime += 16; // Approximate frame time in ms
+
+    // Handle state transitions
+    this.updateStateTransition();
+
+    // Handle audio level - make audio response immediate when target is speaking
+    let effectiveAudioLevel = audioLevel;
+    if (this.targetState === 'speaking') {
+      // If transitioning TO speaking or already speaking, use full audio response immediately
+      effectiveAudioLevel = audioLevel;
+    } else if (
+      this.currentState === 'speaking' &&
+      this.stateTransitionProgress < 1
+    ) {
+      // If transitioning FROM speaking, gradually fade out audio response
+      effectiveAudioLevel *= 1 - this.stateTransitionProgress;
+    } else {
+      // Neither current nor target state uses audio
+      effectiveAudioLevel = 0;
+    }
+
     // Apply smoothing to audio level using exponential moving average
-    const targetLevel = audioLevel * this.config.avatarSensitivity;
+    const targetLevel = effectiveAudioLevel * this.config.avatarSensitivity;
     this.smoothedAudioLevel +=
       (targetLevel - this.smoothedAudioLevel) * this.config.avatarSmoothing;
 
@@ -256,12 +298,14 @@ export class GlastarJS {
       rotation: this.config.backgroundRotation,
       speed: this.config.backgroundRotationSpeed,
       scale: this.config.backgroundScale,
+      state: this.config.avatarState, // Include state in background config for proper dirty tracking
     });
 
     if (
       this.backgroundDirty ||
       this.lastBackgroundConfig !== currentBackgroundConfig ||
-      this.config.backgroundRotation
+      this.config.backgroundRotation ||
+      this.config.avatarState === 'thinking' // Always redraw for thinking animation
     ) {
       // Draw background based on type (only when needed)
       this.drawBackground(ctx, width, height);
@@ -273,9 +317,97 @@ export class GlastarJS {
     // Avatar position (center)
     const centerX = width / 2;
     const centerY = height / 2;
-
-    // Calculate avatar size based on smoothed audio level
     const baseSize = this.config.avatarSize;
+
+    // Handle different avatar states with transitions
+    if (this.stateTransitionProgress === 1) {
+      // Fully transitioned to target state
+      this.drawAvatarState(
+        ctx,
+        centerX,
+        centerY,
+        baseSize,
+        width,
+        height,
+        this.targetState,
+        1.0
+      );
+    } else {
+      // In transition - blend between states
+      ctx.save();
+
+      // Draw current state fading out
+      if (this.currentState !== this.targetState) {
+        const currentOpacity = 1 - this.stateTransitionProgress;
+        ctx.globalAlpha = currentOpacity;
+        this.drawAvatarState(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          this.currentState,
+          currentOpacity
+        );
+      }
+
+      // Draw target state fading in
+      ctx.globalAlpha = this.stateTransitionProgress;
+      this.drawAvatarState(
+        ctx,
+        centerX,
+        centerY,
+        baseSize,
+        width,
+        height,
+        this.targetState,
+        this.stateTransitionProgress
+      );
+
+      ctx.restore();
+    }
+  }
+
+  private drawAvatarState(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    baseSize: number,
+    width: number,
+    height: number,
+    state: AvatarState,
+    opacity: number
+  ): void {
+    switch (state) {
+      case 'speaking':
+        this.drawSpeakingAvatar(ctx, centerX, centerY, baseSize, opacity);
+        break;
+      case 'listening':
+        this.drawListeningAvatar(ctx, centerX, centerY, baseSize, opacity);
+        break;
+      case 'thinking':
+        this.drawThinkingAvatar(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          opacity
+        );
+        break;
+    }
+  }
+
+  private drawSpeakingAvatar(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    baseSize: number,
+    transitionOpacity: number = 1
+  ): void {
+    // Calculate avatar size based on smoothed audio level
     const maxExpansionSize = baseSize * this.config.avatarExpansion;
     const expandedSize =
       baseSize + this.smoothedAudioLevel * (maxExpansionSize - baseSize);
@@ -283,43 +415,19 @@ export class GlastarJS {
     // Calculate opacity based on audio level if fade is enabled
     let avatarOpacity = 1.0;
     if (this.config.avatarFadeWithAudio) {
-      // Very aggressive fade scaling - reaches full opacity very quickly
-      // Use steep power curve to make even quiet speech reach high opacity
-      const scaledLevel = this.smoothedAudioLevel * 8.0; // Much higher multiplier
-      avatarOpacity = Math.max(0.0, Math.min(1.0, Math.pow(scaledLevel, 0.3))); // Much steeper curve
+      const scaledLevel = this.smoothedAudioLevel * 8.0;
+      avatarOpacity = Math.max(0.0, Math.min(1.0, Math.pow(scaledLevel, 0.3)));
     }
 
-    // Create radial gradient for soft edges with dynamic opacity
-    const gradient = ctx.createRadialGradient(
+    this.drawAvatarCircle(
+      ctx,
       centerX,
       centerY,
-      0,
-      centerX,
-      centerY,
-      expandedSize
+      expandedSize,
+      avatarOpacity * transitionOpacity
     );
 
-    // Parse the avatar color (assuming hex format) and apply opacity
-    const color = this.config.avatarColor;
-    const centerOpacity = Math.round(avatarOpacity * 255)
-      .toString(16)
-      .padStart(2, '0');
-    const edgeOpacity = Math.round(avatarOpacity * 128)
-      .toString(16)
-      .padStart(2, '0'); // 50% of center opacity
-
-    gradient.addColorStop(0, color + centerOpacity);
-    gradient.addColorStop(0.7, color + edgeOpacity);
-    gradient.addColorStop(1, color + '00'); // Always fully transparent at edge
-
-    // Draw the avatar circle
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, expandedSize, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Only mark texture for update if avatar actually changed significantly
-    // This reduces GPU texture uploads for minor audio level changes
+    // Update texture if avatar changed significantly
     if (
       Math.abs(expandedSize - this.lastAvatarSize) > 0.5 ||
       Math.abs(avatarOpacity - 1.0) > 0.01
@@ -327,6 +435,306 @@ export class GlastarJS {
       this.textureNeedsUpdate = true;
     }
     this.lastAvatarSize = expandedSize;
+  }
+
+  private drawListeningAvatar(
+    ctx: CanvasRenderingContext2D,
+    _centerX: number,
+    _centerY: number,
+    _baseSize: number,
+    __transitionOpacity: number = 1
+  ): void {
+    // No avatar circle in listening state - just the glass effect
+    // Mark as needing update to keep the glass effect animating
+    this.textureNeedsUpdate = true;
+  }
+
+  private drawThinkingAvatar(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    baseSize: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    // No avatar circle in thinking state - just the rotating border
+    // Draw rotating border animation (like snake game)
+    this.drawThinkingBorder(
+      ctx,
+      centerX,
+      centerY,
+      baseSize,
+      width,
+      height,
+      transitionOpacity
+    );
+
+    // Always mark as needing update for the border animation
+    this.textureNeedsUpdate = true;
+  }
+
+  private drawAvatarCircle(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    size: number,
+    opacity: number
+  ): void {
+    // Create radial gradient for soft edges with dynamic opacity
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      size
+    );
+
+    // Parse the avatar color and apply opacity
+    const color = this.config.avatarColor;
+    const centerOpacity = Math.round(opacity * 255)
+      .toString(16)
+      .padStart(2, '0');
+    const edgeOpacity = Math.round(opacity * 128)
+      .toString(16)
+      .padStart(2, '0');
+
+    gradient.addColorStop(0, color + centerOpacity);
+    gradient.addColorStop(0.7, color + edgeOpacity);
+    gradient.addColorStop(1, color + '00');
+
+    // Draw the avatar circle
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  private drawThinkingBorder(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    _baseSize: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    // Draw different animation based on avatar shape
+    if (this.config.avatarShape === 'circle') {
+      this.drawThinkingBorderCircle(
+        ctx,
+        centerX,
+        centerY,
+        width,
+        height,
+        transitionOpacity
+      );
+    } else {
+      this.drawThinkingBorderSquare(ctx, width, height, transitionOpacity);
+    }
+  }
+
+  private drawThinkingBorderCircle(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    const borderRadius = Math.min(width, height) * 0.48; // Close to the edge
+    const borderWidth = 6; // Thick border
+    const arcLength = Math.PI * 0.3; // Length of the arc
+    const rotationSpeed = 0.0015; // Rotation speed
+
+    // Calculate current rotation
+    const rotation =
+      (this.thinkingAnimationTime * rotationSpeed) % (Math.PI * 2);
+
+    // Set up the traveling arc
+    const startAngle = rotation;
+    const endAngle = rotation + arcLength;
+
+    // Draw a trailing fade effect
+    const trailSegments = 8;
+    for (let i = trailSegments; i >= 1; i--) {
+      const trailOpacity = 0.8 - i * 0.08;
+      const trailStart = startAngle - i * 0.08;
+      const trailEnd = startAngle - (i - 1) * 0.08;
+
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(trailOpacity * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = borderWidth;
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, borderRadius, trailStart, trailEnd);
+      ctx.stroke();
+    }
+
+    // Draw the main bright arc
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = borderWidth;
+    ctx.lineCap = 'round';
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, borderRadius, startAngle, endAngle);
+    ctx.stroke();
+
+    // Draw a bright leading edge
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = borderWidth * 1.5;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, borderRadius, endAngle - 0.1, endAngle);
+    ctx.stroke();
+  }
+
+  private drawThinkingBorderSquare(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    const borderWidth = 6; // Thick border
+    const padding = 10; // Padding from edge
+
+    // Calculate the perimeter for animation
+    const rectWidth = width - padding * 2;
+    const rectHeight = height - padding * 2;
+    const perimeter = (rectWidth + rectHeight) * 2;
+    const segmentLength = perimeter * 0.15; // Length of the moving segment
+    const speed = 0.8; // Pixels per frame
+
+    // Update position along perimeter
+    const currentPosition = (this.thinkingAnimationTime * speed) % perimeter;
+
+    // Helper function to get x,y coordinates from perimeter position
+    const getPositionOnRect = (pos: number) => {
+      let p = pos % perimeter;
+      if (p < 0) {
+        p += perimeter;
+      }
+
+      const left = padding;
+      const right = width - padding;
+      const top = padding;
+      const bottom = height - padding;
+
+      // Top edge (left to right)
+      if (p < rectWidth) {
+        return { x: left + p, y: top };
+      }
+      p -= rectWidth;
+
+      // Right edge (top to bottom)
+      if (p < rectHeight) {
+        return { x: right, y: top + p };
+      }
+      p -= rectHeight;
+
+      // Bottom edge (right to left)
+      if (p < rectWidth) {
+        return { x: right - p, y: bottom };
+      }
+      p -= rectWidth;
+
+      // Left edge (bottom to top)
+      return { x: left, y: bottom - p };
+    };
+
+    // Draw trailing segments with fade
+    const trailSegments = 10;
+    const segmentStep = segmentLength / trailSegments;
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    for (let i = trailSegments; i >= 0; i--) {
+      const segmentStart = currentPosition - i * segmentStep;
+      const segmentEnd = currentPosition - (i - 1) * segmentStep;
+      const opacity = 1.0 - (i / trailSegments) * 0.7;
+
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(opacity * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = borderWidth * (1 + (1 - i / trailSegments) * 0.3); // Slightly thicker at the head
+
+      ctx.beginPath();
+      const start = getPositionOnRect(segmentStart);
+      ctx.moveTo(start.x, start.y);
+
+      // Draw small segments to follow the rectangle path
+      const steps = 5;
+      for (let j = 1; j <= steps; j++) {
+        const pos = segmentStart + (segmentEnd - segmentStart) * (j / steps);
+        const point = getPositionOnRect(pos);
+        ctx.lineTo(point.x, point.y);
+      }
+
+      ctx.stroke();
+    }
+
+    // Add a bright glow at the leading edge
+    const headPos = getPositionOnRect(currentPosition);
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.fillStyle = this.config.avatarColor;
+    ctx.beginPath();
+    ctx.arc(headPos.x, headPos.y, borderWidth / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  private updateStateTransition(): void {
+    // Check if we need to start a new transition
+    if (this.config.avatarState !== this.targetState) {
+      // Start new transition
+      this.currentState = this.targetState;
+      this.targetState = this.config.avatarState;
+      this.stateTransitionProgress = 0;
+      this.stateTransitionStartTime = Date.now();
+    }
+
+    // Update transition progress
+    if (this.stateTransitionProgress < 1) {
+      const elapsed = Date.now() - this.stateTransitionStartTime;
+      this.stateTransitionProgress = Math.min(
+        1,
+        elapsed / this.stateTransitionDuration
+      );
+
+      // Use easing function for smoother transition
+      this.stateTransitionProgress = this.easeInOutCubic(
+        this.stateTransitionProgress
+      );
+
+      // Mark as needing update during transition
+      this.textureNeedsUpdate = true;
+
+      // Complete transition
+      if (this.stateTransitionProgress === 1) {
+        this.currentState = this.targetState;
+      }
+    }
+  }
+
+  private easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
   private drawBackground(
@@ -555,12 +963,22 @@ export class GlastarJS {
     }
   }
 
-  resize(width: number, height: number): void {
+  resize(width: number, height?: number): void {
+    // When avatarShape is defined, enforce square dimensions
+    const effectiveHeight =
+      this.config.avatarShape === 'circle' ||
+      this.config.avatarShape === 'square'
+        ? width
+        : height || width;
+
     this.canvas.width = width;
-    this.canvas.height = height;
+    this.canvas.height = effectiveHeight;
     this.backgroundCanvas.width = width;
-    this.backgroundCanvas.height = height;
-    this.gl.viewport(0, 0, width, height);
+    this.backgroundCanvas.height = effectiveHeight;
+    this.gl.viewport(0, 0, width, effectiveHeight);
+    this.config.width = width;
+    this.config.height = effectiveHeight;
+    this.backgroundDirty = true;
   }
 
   private render = (): void => {

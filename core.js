@@ -448,6 +448,14 @@ var _GlastarJS = class _GlastarJS {
     this.lastBackgroundConfig = '';
     this.textureNeedsUpdate = true;
     this.lastAvatarSize = 0;
+    this.thinkingAnimationTime = 0;
+    this.currentState = 'speaking';
+    this.targetState = 'speaking';
+    this.stateTransitionProgress = 1;
+    // 0 to 1, 1 means fully transitioned
+    this.stateTransitionDuration = 500;
+    // milliseconds
+    this.stateTransitionStartTime = 0;
     this.render = () => {
       if (!this.program || this.isDisposed) {
         return;
@@ -532,9 +540,14 @@ var _GlastarJS = class _GlastarJS {
     };
     var _a, _b, _c, _d, _e, _f;
     this.canvas = canvas;
+    const width = config.width || 800;
+    const height =
+      config.avatarShape === 'circle' || config.avatarShape === 'square'
+        ? width
+        : config.height || 600;
     this.config = {
-      width: config.width || 800,
-      height: config.height || 600,
+      width,
+      height,
       texture: config.texture || 'arctic',
       glassOpacity: config.glassOpacity || 0.95,
       refractionStrength: config.refractionStrength || 1,
@@ -546,6 +559,8 @@ var _GlastarJS = class _GlastarJS {
       avatarExpansion: config.avatarExpansion || 2,
       avatarSmoothing: config.avatarSmoothing || 0.25,
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
+      avatarState: config.avatarState || 'speaking',
+      avatarShape: config.avatarShape || 'square',
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
       backgroundGradient: {
@@ -685,7 +700,20 @@ var _GlastarJS = class _GlastarJS {
     const ctx = this.backgroundCtx;
     const width = this.backgroundCanvas.width;
     const height = this.backgroundCanvas.height;
-    const targetLevel = audioLevel * this.config.avatarSensitivity;
+    this.thinkingAnimationTime += 16;
+    this.updateStateTransition();
+    let effectiveAudioLevel = audioLevel;
+    if (this.targetState === 'speaking') {
+      effectiveAudioLevel = audioLevel;
+    } else if (
+      this.currentState === 'speaking' &&
+      this.stateTransitionProgress < 1
+    ) {
+      effectiveAudioLevel *= 1 - this.stateTransitionProgress;
+    } else {
+      effectiveAudioLevel = 0;
+    }
+    const targetLevel = effectiveAudioLevel * this.config.avatarSensitivity;
     this.smoothedAudioLevel +=
       (targetLevel - this.smoothedAudioLevel) * this.config.avatarSmoothing;
     const currentBackgroundConfig = JSON.stringify({
@@ -696,11 +724,14 @@ var _GlastarJS = class _GlastarJS {
       rotation: this.config.backgroundRotation,
       speed: this.config.backgroundRotationSpeed,
       scale: this.config.backgroundScale,
+      state: this.config.avatarState,
+      // Include state in background config for proper dirty tracking
     });
     if (
       this.backgroundDirty ||
       this.lastBackgroundConfig !== currentBackgroundConfig ||
-      this.config.backgroundRotation
+      this.config.backgroundRotation ||
+      this.config.avatarState === 'thinking'
     ) {
       this.drawBackground(ctx, width, height);
       this.backgroundDirty = false;
@@ -710,6 +741,78 @@ var _GlastarJS = class _GlastarJS {
     const centerX = width / 2;
     const centerY = height / 2;
     const baseSize = this.config.avatarSize;
+    if (this.stateTransitionProgress === 1) {
+      this.drawAvatarState(
+        ctx,
+        centerX,
+        centerY,
+        baseSize,
+        width,
+        height,
+        this.targetState,
+        1
+      );
+    } else {
+      ctx.save();
+      if (this.currentState !== this.targetState) {
+        const currentOpacity = 1 - this.stateTransitionProgress;
+        ctx.globalAlpha = currentOpacity;
+        this.drawAvatarState(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          this.currentState,
+          currentOpacity
+        );
+      }
+      ctx.globalAlpha = this.stateTransitionProgress;
+      this.drawAvatarState(
+        ctx,
+        centerX,
+        centerY,
+        baseSize,
+        width,
+        height,
+        this.targetState,
+        this.stateTransitionProgress
+      );
+      ctx.restore();
+    }
+  }
+  drawAvatarState(
+    ctx,
+    centerX,
+    centerY,
+    baseSize,
+    width,
+    height,
+    state,
+    opacity
+  ) {
+    switch (state) {
+      case 'speaking':
+        this.drawSpeakingAvatar(ctx, centerX, centerY, baseSize, opacity);
+        break;
+      case 'listening':
+        this.drawListeningAvatar(ctx, centerX, centerY, baseSize, opacity);
+        break;
+      case 'thinking':
+        this.drawThinkingAvatar(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          opacity
+        );
+        break;
+    }
+  }
+  drawSpeakingAvatar(ctx, centerX, centerY, baseSize, transitionOpacity = 1) {
     const maxExpansionSize = baseSize * this.config.avatarExpansion;
     const expandedSize =
       baseSize + this.smoothedAudioLevel * (maxExpansionSize - baseSize);
@@ -718,28 +821,13 @@ var _GlastarJS = class _GlastarJS {
       const scaledLevel = this.smoothedAudioLevel * 8;
       avatarOpacity = Math.max(0, Math.min(1, Math.pow(scaledLevel, 0.3)));
     }
-    const gradient = ctx.createRadialGradient(
+    this.drawAvatarCircle(
+      ctx,
       centerX,
       centerY,
-      0,
-      centerX,
-      centerY,
-      expandedSize
+      expandedSize,
+      avatarOpacity * transitionOpacity
     );
-    const color = this.config.avatarColor;
-    const centerOpacity = Math.round(avatarOpacity * 255)
-      .toString(16)
-      .padStart(2, '0');
-    const edgeOpacity = Math.round(avatarOpacity * 128)
-      .toString(16)
-      .padStart(2, '0');
-    gradient.addColorStop(0, color + centerOpacity);
-    gradient.addColorStop(0.7, color + edgeOpacity);
-    gradient.addColorStop(1, color + '00');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, expandedSize, 0, Math.PI * 2);
-    ctx.fill();
     if (
       Math.abs(expandedSize - this.lastAvatarSize) > 0.5 ||
       Math.abs(avatarOpacity - 1) > 0.01
@@ -747,6 +835,224 @@ var _GlastarJS = class _GlastarJS {
       this.textureNeedsUpdate = true;
     }
     this.lastAvatarSize = expandedSize;
+  }
+  drawListeningAvatar(
+    ctx,
+    _centerX,
+    _centerY,
+    _baseSize,
+    _transitionOpacity = 1
+  ) {
+    this.textureNeedsUpdate = true;
+  }
+  drawThinkingAvatar(
+    ctx,
+    centerX,
+    centerY,
+    baseSize,
+    width,
+    height,
+    transitionOpacity = 1
+  ) {
+    this.drawThinkingBorder(
+      ctx,
+      centerX,
+      centerY,
+      baseSize,
+      width,
+      height,
+      transitionOpacity
+    );
+    this.textureNeedsUpdate = true;
+  }
+  drawAvatarCircle(ctx, centerX, centerY, size, opacity) {
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      0,
+      centerX,
+      centerY,
+      size
+    );
+    const color = this.config.avatarColor;
+    const centerOpacity = Math.round(opacity * 255)
+      .toString(16)
+      .padStart(2, '0');
+    const edgeOpacity = Math.round(opacity * 128)
+      .toString(16)
+      .padStart(2, '0');
+    gradient.addColorStop(0, color + centerOpacity);
+    gradient.addColorStop(0.7, color + edgeOpacity);
+    gradient.addColorStop(1, color + '00');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  drawThinkingBorder(
+    ctx,
+    centerX,
+    centerY,
+    _baseSize,
+    width,
+    height,
+    transitionOpacity = 1
+  ) {
+    if (this.config.avatarShape === 'circle') {
+      this.drawThinkingBorderCircle(
+        ctx,
+        centerX,
+        centerY,
+        width,
+        height,
+        transitionOpacity
+      );
+    } else {
+      this.drawThinkingBorderSquare(ctx, width, height, transitionOpacity);
+    }
+  }
+  drawThinkingBorderCircle(
+    ctx,
+    centerX,
+    centerY,
+    width,
+    height,
+    transitionOpacity = 1
+  ) {
+    const borderRadius = Math.min(width, height) * 0.48;
+    const borderWidth = 6;
+    const arcLength = Math.PI * 0.3;
+    const rotationSpeed = 15e-4;
+    const rotation =
+      (this.thinkingAnimationTime * rotationSpeed) % (Math.PI * 2);
+    const startAngle = rotation;
+    const endAngle = rotation + arcLength;
+    const trailSegments = 8;
+    for (let i = trailSegments; i >= 1; i--) {
+      const trailOpacity = 0.8 - i * 0.08;
+      const trailStart = startAngle - i * 0.08;
+      const trailEnd = startAngle - (i - 1) * 0.08;
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(trailOpacity * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = borderWidth;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, borderRadius, trailStart, trailEnd);
+      ctx.stroke();
+    }
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = borderWidth;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, borderRadius, startAngle, endAngle);
+    ctx.stroke();
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = borderWidth * 1.5;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, borderRadius, endAngle - 0.1, endAngle);
+    ctx.stroke();
+  }
+  drawThinkingBorderSquare(ctx, width, height, transitionOpacity = 1) {
+    const borderWidth = 6;
+    const padding = 10;
+    const rectWidth = width - padding * 2;
+    const rectHeight = height - padding * 2;
+    const perimeter = (rectWidth + rectHeight) * 2;
+    const segmentLength = perimeter * 0.15;
+    const speed = 0.8;
+    const currentPosition = (this.thinkingAnimationTime * speed) % perimeter;
+    const getPositionOnRect = pos => {
+      let p = pos % perimeter;
+      if (p < 0) {
+        p += perimeter;
+      }
+      const left = padding;
+      const right = width - padding;
+      const top = padding;
+      const bottom = height - padding;
+      if (p < rectWidth) {
+        return { x: left + p, y: top };
+      }
+      p -= rectWidth;
+      if (p < rectHeight) {
+        return { x: right, y: top + p };
+      }
+      p -= rectHeight;
+      if (p < rectWidth) {
+        return { x: right - p, y: bottom };
+      }
+      p -= rectWidth;
+      return { x: left, y: bottom - p };
+    };
+    const trailSegments = 10;
+    const segmentStep = segmentLength / trailSegments;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (let i = trailSegments; i >= 0; i--) {
+      const segmentStart = currentPosition - i * segmentStep;
+      const segmentEnd = currentPosition - (i - 1) * segmentStep;
+      const opacity = 1 - (i / trailSegments) * 0.7;
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(opacity * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = borderWidth * (1 + (1 - i / trailSegments) * 0.3);
+      ctx.beginPath();
+      const start = getPositionOnRect(segmentStart);
+      ctx.moveTo(start.x, start.y);
+      const steps = 5;
+      for (let j = 1; j <= steps; j++) {
+        const pos = segmentStart + (segmentEnd - segmentStart) * (j / steps);
+        const point = getPositionOnRect(pos);
+        ctx.lineTo(point.x, point.y);
+      }
+      ctx.stroke();
+    }
+    const headPos = getPositionOnRect(currentPosition);
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.fillStyle = this.config.avatarColor;
+    ctx.beginPath();
+    ctx.arc(headPos.x, headPos.y, borderWidth / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+  updateStateTransition() {
+    if (this.config.avatarState !== this.targetState) {
+      this.currentState = this.targetState;
+      this.targetState = this.config.avatarState;
+      this.stateTransitionProgress = 0;
+      this.stateTransitionStartTime = Date.now();
+    }
+    if (this.stateTransitionProgress < 1) {
+      const elapsed = Date.now() - this.stateTransitionStartTime;
+      this.stateTransitionProgress = Math.min(
+        1,
+        elapsed / this.stateTransitionDuration
+      );
+      this.stateTransitionProgress = this.easeInOutCubic(
+        this.stateTransitionProgress
+      );
+      this.textureNeedsUpdate = true;
+      if (this.stateTransitionProgress === 1) {
+        this.currentState = this.targetState;
+      }
+    }
+  }
+  easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
   drawBackground(ctx, width, height) {
     const centerX = width / 2;
@@ -941,11 +1247,19 @@ var _GlastarJS = class _GlastarJS {
     }
   }
   resize(width, height) {
+    const effectiveHeight =
+      this.config.avatarShape === 'circle' ||
+      this.config.avatarShape === 'square'
+        ? width
+        : height || width;
     this.canvas.width = width;
-    this.canvas.height = height;
+    this.canvas.height = effectiveHeight;
     this.backgroundCanvas.width = width;
-    this.backgroundCanvas.height = height;
-    this.gl.viewport(0, 0, width, height);
+    this.backgroundCanvas.height = effectiveHeight;
+    this.gl.viewport(0, 0, width, effectiveHeight);
+    this.config.width = width;
+    this.config.height = effectiveHeight;
+    this.backgroundDirty = true;
   }
   start() {
     if (!this.animationId) {

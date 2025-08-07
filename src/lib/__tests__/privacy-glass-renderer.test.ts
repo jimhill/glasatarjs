@@ -62,9 +62,10 @@ describe('GlastarJS', () => {
       });
 
       // Access private background canvas for testing
+      // With default square shape, height should match width
       const backgroundCanvas = (renderer as any).backgroundCanvas;
       expect(backgroundCanvas.width).toBe(1000);
-      expect(backgroundCanvas.height).toBe(600);
+      expect(backgroundCanvas.height).toBe(1000); // Square enforces equal dimensions
     });
   });
 
@@ -344,10 +345,11 @@ describe('GlastarJS', () => {
     it('should update canvas dimensions', () => {
       renderer.resize(1200, 800);
 
+      // With default square shape, height should match width
       expect(mockCanvas.width).toBe(1200);
-      expect(mockCanvas.height).toBe(800);
+      expect(mockCanvas.height).toBe(1200); // Square enforces equal dimensions
       expect((renderer as any).backgroundCanvas.width).toBe(1200);
-      expect((renderer as any).backgroundCanvas.height).toBe(800);
+      expect((renderer as any).backgroundCanvas.height).toBe(1200);
     });
 
     it('should update WebGL viewport', () => {
@@ -356,9 +358,9 @@ describe('GlastarJS', () => {
         renderer.resize(1000, 600);
       }).not.toThrow();
 
-      // Verify canvas dimensions were updated
+      // Verify canvas dimensions were updated - square shape enforces equal dimensions
       expect(mockCanvas.width).toBe(1000);
-      expect(mockCanvas.height).toBe(600);
+      expect(mockCanvas.height).toBe(1000); // Square enforces equal dimensions
     });
   });
 });
