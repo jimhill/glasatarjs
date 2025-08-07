@@ -138,10 +138,6 @@ function App() {
           backgroundScale={backgroundScale}
           className={`visualizer-canvas ${avatarShape === 'circle' ? 'visualizer-canvas--circle' : ''}`}
         />
-
-        <div className="recording-status">
-          {isRecording ? '🎤 Recording' : '🔇 Not Recording'}
-        </div>
       </div>
 
       <div className="button-container">
