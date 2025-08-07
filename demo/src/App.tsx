@@ -12,7 +12,7 @@ function App() {
   const [avatarColor, setAvatarColor] = useState('#00c7fc');
   const [avatarSize, setAvatarSize] = useState(37);
   const [avatarSensitivity, setAvatarSensitivity] = useState(1.8);
-  const [avatarExpansion, setAvatarExpansion] = useState(49.4);
+  const [avatarExpansion, setAvatarExpansion] = useState(20.0);
   const [avatarSmoothing, setAvatarSmoothing] = useState(0.23);
   const [avatarFadeWithAudio, setAvatarFadeWithAudio] = useState(true);
   const [avatarState, setAvatarState] = useState<AvatarState>('speaking');

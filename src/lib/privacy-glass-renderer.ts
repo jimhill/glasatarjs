@@ -384,7 +384,7 @@ export class GlastarJS {
         this.drawSpeakingAvatar(ctx, centerX, centerY, baseSize, opacity);
         break;
       case 'listening':
-        this.drawListeningAvatar(ctx, centerX, centerY, baseSize, opacity);
+        this.drawListeningAvatar(ctx, centerX, centerY, baseSize);
         break;
       case 'thinking':
         this.drawThinkingAvatar(
