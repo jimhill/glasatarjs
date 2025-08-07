@@ -41,12 +41,42 @@ async function build() {
   // Clean up unbundled JavaScript files (keep only .d.ts files and bundled files)
   console.log('Cleaning up unbundled JavaScript files...');
   try {
-    rmSync('dist/lib', { recursive: true, force: true });
-    rmSync('dist/components', { recursive: true, force: true });
-    
-    // Remove individual .js files but keep the bundled index.js
     const fs = await import('fs');
     const path = await import('path');
+    
+    // Helper function to recursively remove .js and .js.map files but keep .d.ts files
+    function cleanDirectory(dirPath) {
+      if (!fs.existsSync(dirPath)) return;
+      
+      const items = fs.readdirSync(dirPath);
+      for (const item of items) {
+        const itemPath = path.join(dirPath, item);
+        const stat = fs.statSync(itemPath);
+        
+        if (stat.isDirectory()) {
+          cleanDirectory(itemPath);
+          // Remove empty directories after cleaning
+          try {
+            const remaining = fs.readdirSync(itemPath);
+            if (remaining.length === 0) {
+              fs.rmdirSync(itemPath);
+              console.log(`Removed empty directory ${itemPath}`);
+            }
+          } catch (error) {
+            // Directory might not be empty, ignore
+          }
+        } else if (item.endsWith('.js') || item.endsWith('.js.map')) {
+          fs.unlinkSync(itemPath);
+          console.log(`Removed ${itemPath}`);
+        }
+      }
+    }
+    
+    // Clean lib and components directories but preserve .d.ts files
+    cleanDirectory('dist/lib');
+    cleanDirectory('dist/components');
+    
+    // Remove individual .js files in root dist but keep the bundled index.js
     const distFiles = fs.readdirSync('dist');
     for (const file of distFiles) {
       if (file.endsWith('.js') && file !== 'index.js') {
@@ -59,7 +89,7 @@ async function build() {
       }
     }
     
-    console.log('Cleaned up unbundled JavaScript files');
+    console.log('Cleaned up unbundled JavaScript files while preserving TypeScript declarations');
   } catch (error) {
     console.log('Error cleaning up files:', error.message);
   }

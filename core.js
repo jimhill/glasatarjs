@@ -538,7 +538,7 @@ var _GlastarJS = class _GlastarJS {
         this.animationId = requestAnimationFrame(this.render);
       }
     };
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     this.canvas = canvas;
     const width = config.width || 800;
     const height =
@@ -561,30 +561,41 @@ var _GlastarJS = class _GlastarJS {
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
       avatarState: config.avatarState || 'speaking',
       avatarShape: config.avatarShape || 'square',
+      listeningPulseBase: (_a = config.listeningPulseBase) != null ? _a : 50,
+      listeningPulseAmplitude:
+        (_b = config.listeningPulseAmplitude) != null ? _b : 35,
+      listeningPulseSpeed:
+        (_c = config.listeningPulseSpeed) != null ? _c : 2e-3,
+      thinkingBorderWidth: (_d = config.thinkingBorderWidth) != null ? _d : 6,
+      thinkingBorderSpeed: (_e = config.thinkingBorderSpeed) != null ? _e : 0.8,
+      thinkingBorderLength:
+        (_f = config.thinkingBorderLength) != null ? _f : 0.15,
+      thinkingBorderTrailSegments:
+        (_g = config.thinkingBorderTrailSegments) != null ? _g : 10,
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
       backgroundGradient: {
         centerColor:
-          ((_a = config.backgroundGradient) == null
+          ((_h = config.backgroundGradient) == null
             ? void 0
-            : _a.centerColor) || '#4A90E2',
+            : _h.centerColor) || '#4A90E2',
         edgeColor:
-          ((_b = config.backgroundGradient) == null ? void 0 : _b.edgeColor) ||
+          ((_i = config.backgroundGradient) == null ? void 0 : _i.edgeColor) ||
           '#1a1a2e',
         angle:
-          (_d = (_c = config.backgroundGradient) == null ? void 0 : _c.angle) !=
+          (_k = (_j = config.backgroundGradient) == null ? void 0 : _j.angle) !=
           null
-            ? _d
+            ? _k
             : 45,
       },
       backgroundImage: config.backgroundImage,
-      backgroundRotation: (_e = config.backgroundRotation) != null ? _e : true,
+      backgroundRotation: (_l = config.backgroundRotation) != null ? _l : true,
       // If backgroundRotation is false, we set the rotation speed to 0 regardless of the backgroundRotationSpeed
       backgroundRotationSpeed:
         config.backgroundRotation === false
           ? 0
-          : (_f = config.backgroundRotationSpeed) != null
-            ? _f
+          : (_m = config.backgroundRotationSpeed) != null
+            ? _m
             : 10,
       backgroundScale: config.backgroundScale || 1,
     };
@@ -797,7 +808,15 @@ var _GlastarJS = class _GlastarJS {
         this.drawSpeakingAvatar(ctx, centerX, centerY, baseSize, opacity);
         break;
       case 'listening':
-        this.drawListeningAvatar(ctx, centerX, centerY, baseSize, opacity);
+        this.drawListeningAvatar(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          opacity
+        );
         break;
       case 'thinking':
         this.drawThinkingAvatar(
@@ -838,11 +857,22 @@ var _GlastarJS = class _GlastarJS {
   }
   drawListeningAvatar(
     ctx,
-    _centerX,
-    _centerY,
-    _baseSize,
-    _transitionOpacity = 1
+    centerX,
+    centerY,
+    baseSize,
+    width,
+    height,
+    transitionOpacity = 1
   ) {
+    this.drawListeningBorder(
+      ctx,
+      centerX,
+      centerY,
+      baseSize,
+      width,
+      height,
+      transitionOpacity
+    );
     this.textureNeedsUpdate = true;
   }
   drawThinkingAvatar(
@@ -920,9 +950,9 @@ var _GlastarJS = class _GlastarJS {
     transitionOpacity = 1
   ) {
     const borderRadius = Math.min(width, height) * 0.48;
-    const borderWidth = 6;
-    const arcLength = Math.PI * 0.3;
-    const rotationSpeed = 15e-4;
+    const borderWidth = this.config.thinkingBorderWidth;
+    const arcLength = Math.PI * (this.config.thinkingBorderLength * 2);
+    const rotationSpeed = this.config.thinkingBorderSpeed * 2e-3;
     const rotation =
       (this.thinkingAnimationTime * rotationSpeed) % (Math.PI * 2);
     const startAngle = rotation;
@@ -964,13 +994,13 @@ var _GlastarJS = class _GlastarJS {
     ctx.stroke();
   }
   drawThinkingBorderSquare(ctx, width, height, transitionOpacity = 1) {
-    const borderWidth = 6;
+    const borderWidth = this.config.thinkingBorderWidth;
     const padding = 10;
     const rectWidth = width - padding * 2;
     const rectHeight = height - padding * 2;
     const perimeter = (rectWidth + rectHeight) * 2;
-    const segmentLength = perimeter * 0.15;
-    const speed = 0.8;
+    const segmentLength = perimeter * this.config.thinkingBorderLength;
+    const speed = this.config.thinkingBorderSpeed;
     const currentPosition = (this.thinkingAnimationTime * speed) % perimeter;
     const getPositionOnRect = pos => {
       let p = pos % perimeter;
@@ -995,7 +1025,7 @@ var _GlastarJS = class _GlastarJS {
       p -= rectWidth;
       return { x: left, y: bottom - p };
     };
-    const trailSegments = 10;
+    const trailSegments = this.config.thinkingBorderTrailSegments;
     const segmentStep = segmentLength / trailSegments;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -1028,6 +1058,153 @@ var _GlastarJS = class _GlastarJS {
     ctx.arc(headPos.x, headPos.y, borderWidth / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+  }
+  drawListeningBorder(
+    ctx,
+    centerX,
+    centerY,
+    _baseSize,
+    width,
+    height,
+    transitionOpacity = 1
+  ) {
+    if (this.config.avatarShape === 'circle') {
+      this.drawListeningBorderCircle(
+        ctx,
+        centerX,
+        centerY,
+        width,
+        height,
+        transitionOpacity
+      );
+    } else {
+      this.drawListeningBorderSquare(ctx, width, height, transitionOpacity);
+    }
+  }
+  drawListeningBorderCircle(
+    ctx,
+    centerX,
+    centerY,
+    width,
+    height,
+    transitionOpacity = 1
+  ) {
+    var _a, _b, _c;
+    const radius = Math.min(width, height) * 0.52;
+    const pulseSpeed =
+      (_a = this.config.listeningPulseSpeed) != null ? _a : 2e-3;
+    const baseGlowWidth =
+      (_b = this.config.listeningPulseBase) != null ? _b : 50;
+    const pulseAmplitude =
+      (_c = this.config.listeningPulseAmplitude) != null ? _c : 35;
+    const pulsePhase = (Date.now() * pulseSpeed) % (Math.PI * 2);
+    const glowWidth = baseGlowWidth + Math.sin(pulsePhase) * pulseAmplitude;
+    ctx.save();
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      radius - glowWidth,
+      // Inner radius (transparent)
+      centerX,
+      centerY,
+      radius
+      // Outer radius (colored)
+    );
+    gradient.addColorStop(0, 'rgba(0,0,0,0)');
+    gradient.addColorStop(
+      0.3,
+      this.config.avatarColor +
+        Math.round(0.1 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+    gradient.addColorStop(
+      0.7,
+      this.config.avatarColor +
+        Math.round(0.4 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+    gradient.addColorStop(
+      1,
+      this.config.avatarColor +
+        Math.round(0.8 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(0.3 * transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius - 1, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+  drawListeningBorderSquare(ctx, width, height, transitionOpacity = 1) {
+    var _a, _b, _c;
+    const padding = -5;
+    const pulseSpeed =
+      (_a = this.config.listeningPulseSpeed) != null ? _a : 2e-3;
+    const baseGlowWidth =
+      (_b = this.config.listeningPulseBase) != null ? _b : 50;
+    const pulseAmplitude =
+      (_c = this.config.listeningPulseAmplitude) != null ? _c : 35;
+    const pulsePhase = (Date.now() * pulseSpeed) % (Math.PI * 2);
+    const glowWidth = baseGlowWidth + Math.sin(pulsePhase) * pulseAmplitude;
+    const rectWidth = width - padding * 2;
+    const rectHeight = height - padding * 2;
+    const cornerRadius = 12;
+    ctx.save();
+    const layers = 8;
+    for (let i = 0; i < layers; i++) {
+      const layerProgress = i / (layers - 1);
+      const inset = glowWidth * layerProgress;
+      const layerOpacity = (1 - layerProgress) * 0.5 * transitionOpacity;
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(layerOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = 3;
+      if (i < 3) {
+        ctx.shadowBlur = 10 - i * 3;
+        ctx.shadowColor = this.config.avatarColor;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+      ctx.beginPath();
+      ctx.roundRect(
+        padding + inset,
+        padding + inset,
+        rectWidth - inset * 2,
+        rectHeight - inset * 2,
+        Math.max(1, cornerRadius - inset * 0.5)
+      );
+      ctx.stroke();
+    }
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(0.6 * transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(padding, padding, rectWidth, rectHeight, cornerRadius);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
   }
   updateStateTransition() {
     if (this.config.avatarState !== this.targetState) {
