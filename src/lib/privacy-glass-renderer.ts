@@ -30,6 +30,13 @@ export class GlastarJS {
     avatarFadeWithAudio: boolean;
     avatarState: AvatarState;
     avatarShape: AvatarShape;
+    listeningPulseBase: number;
+    listeningPulseAmplitude: number;
+    listeningPulseSpeed: number;
+    thinkingBorderWidth: number;
+    thinkingBorderSpeed: number;
+    thinkingBorderLength: number;
+    thinkingBorderTrailSegments: number;
     backgroundColor: string;
     backgroundType: 'color' | 'radial-gradient' | 'linear-gradient' | 'image';
     backgroundGradient: {
@@ -101,6 +108,13 @@ export class GlastarJS {
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
       avatarState: config.avatarState || 'speaking',
       avatarShape: config.avatarShape || 'square',
+      listeningPulseBase: config.listeningPulseBase ?? 50,
+      listeningPulseAmplitude: config.listeningPulseAmplitude ?? 35,
+      listeningPulseSpeed: config.listeningPulseSpeed ?? 0.002,
+      thinkingBorderWidth: config.thinkingBorderWidth ?? 6,
+      thinkingBorderSpeed: config.thinkingBorderSpeed ?? 0.8,
+      thinkingBorderLength: config.thinkingBorderLength ?? 0.15,
+      thinkingBorderTrailSegments: config.thinkingBorderTrailSegments ?? 10,
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
       backgroundGradient: {
@@ -384,7 +398,15 @@ export class GlastarJS {
         this.drawSpeakingAvatar(ctx, centerX, centerY, baseSize, opacity);
         break;
       case 'listening':
-        this.drawListeningAvatar(ctx, centerX, centerY, baseSize);
+        this.drawListeningAvatar(
+          ctx,
+          centerX,
+          centerY,
+          baseSize,
+          width,
+          height,
+          opacity
+        );
         break;
       case 'thinking':
         this.drawThinkingAvatar(
@@ -437,18 +459,29 @@ export class GlastarJS {
     this.lastAvatarSize = expandedSize;
   }
 
-  /* eslint-disable no-unused-vars */
   private drawListeningAvatar(
-    _ctx: CanvasRenderingContext2D,
-    _centerX: number,
-    _centerY: number,
-    _baseSize: number
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    baseSize: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
   ): void {
-    // No avatar circle in listening state - just the glass effect
-    // Mark as needing update to keep the glass effect animating
+    // Draw pulsing border for listening state
+    this.drawListeningBorder(
+      ctx,
+      centerX,
+      centerY,
+      baseSize,
+      width,
+      height,
+      transitionOpacity
+    );
+
+    // Always mark as needing update for the pulsing animation
     this.textureNeedsUpdate = true;
   }
-  /* eslint-enable no-unused-vars */
 
   private drawThinkingAvatar(
     ctx: CanvasRenderingContext2D,
@@ -545,9 +578,9 @@ export class GlastarJS {
     transitionOpacity: number = 1
   ): void {
     const borderRadius = Math.min(width, height) * 0.48; // Close to the edge
-    const borderWidth = 6; // Thick border
-    const arcLength = Math.PI * 0.3; // Length of the arc
-    const rotationSpeed = 0.0015; // Rotation speed
+    const borderWidth = this.config.thinkingBorderWidth; // Configurable border width
+    const arcLength = Math.PI * (this.config.thinkingBorderLength * 2); // Configurable arc length
+    const rotationSpeed = this.config.thinkingBorderSpeed * 0.002; // Configurable rotation speed
 
     // Calculate current rotation
     const rotation =
@@ -609,15 +642,15 @@ export class GlastarJS {
     height: number,
     transitionOpacity: number = 1
   ): void {
-    const borderWidth = 6; // Thick border
+    const borderWidth = this.config.thinkingBorderWidth; // Configurable border width
     const padding = 10; // Padding from edge
 
     // Calculate the perimeter for animation
     const rectWidth = width - padding * 2;
     const rectHeight = height - padding * 2;
     const perimeter = (rectWidth + rectHeight) * 2;
-    const segmentLength = perimeter * 0.15; // Length of the moving segment
-    const speed = 0.8; // Pixels per frame
+    const segmentLength = perimeter * this.config.thinkingBorderLength; // Configurable segment length
+    const speed = this.config.thinkingBorderSpeed; // Configurable pixels per frame
 
     // Update position along perimeter
     const currentPosition = (this.thinkingAnimationTime * speed) % perimeter;
@@ -657,7 +690,7 @@ export class GlastarJS {
     };
 
     // Draw trailing segments with fade
-    const trailSegments = 10;
+    const trailSegments = this.config.thinkingBorderTrailSegments; // Configurable trail segments
     const segmentStep = segmentLength / trailSegments;
 
     ctx.lineCap = 'round';
@@ -699,6 +732,190 @@ export class GlastarJS {
     ctx.arc(headPos.x, headPos.y, borderWidth / 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+  }
+
+  private drawListeningBorder(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    _baseSize: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    // Draw different animation based on avatar shape
+    if (this.config.avatarShape === 'circle') {
+      this.drawListeningBorderCircle(
+        ctx,
+        centerX,
+        centerY,
+        width,
+        height,
+        transitionOpacity
+      );
+    } else {
+      this.drawListeningBorderSquare(ctx, width, height, transitionOpacity);
+    }
+  }
+
+  private drawListeningBorderCircle(
+    ctx: CanvasRenderingContext2D,
+    centerX: number,
+    centerY: number,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    const radius = Math.min(width, height) * 0.52; // Move further out to crop at center
+    const pulseSpeed = this.config.listeningPulseSpeed ?? 0.002; // Configurable speed
+
+    // Calculate pulsing glow width (configurable for dramatic effect)
+    const baseGlowWidth = this.config.listeningPulseBase ?? 50; // Configurable base
+    const pulseAmplitude = this.config.listeningPulseAmplitude ?? 35; // Configurable amplitude
+    const pulsePhase = (Date.now() * pulseSpeed) % (Math.PI * 2);
+    const glowWidth = baseGlowWidth + Math.sin(pulsePhase) * pulseAmplitude;
+
+    // Save the current state
+    ctx.save();
+
+    // Create radial gradient from edge inward
+    const gradient = ctx.createRadialGradient(
+      centerX,
+      centerY,
+      radius - glowWidth, // Inner radius (transparent)
+      centerX,
+      centerY,
+      radius // Outer radius (colored)
+    );
+
+    // Add gradient stops - fade from transparent center to colored edge
+    gradient.addColorStop(0, 'rgba(0,0,0,0)'); // Fully transparent at inner edge
+    gradient.addColorStop(
+      0.3,
+      this.config.avatarColor +
+        Math.round(0.1 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+    gradient.addColorStop(
+      0.7,
+      this.config.avatarColor +
+        Math.round(0.4 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+    gradient.addColorStop(
+      1,
+      this.config.avatarColor +
+        Math.round(0.8 * transitionOpacity * 255)
+          .toString(16)
+          .padStart(2, '0')
+    );
+
+    // Apply the gradient as fill
+    ctx.fillStyle = gradient;
+
+    // Draw the circle with gradient
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Add a subtle outer glow for more depth
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(0.3 * transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius - 1, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Reset shadow
+    ctx.shadowBlur = 0;
+
+    // Restore the context state
+    ctx.restore();
+  }
+
+  private drawListeningBorderSquare(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    transitionOpacity: number = 1
+  ): void {
+    const padding = -5; // Negative padding to move border outside visible area
+    const pulseSpeed = this.config.listeningPulseSpeed ?? 0.002; // Configurable speed
+
+    // Calculate pulsing glow width (configurable for dramatic effect)
+    const baseGlowWidth = this.config.listeningPulseBase ?? 50; // Configurable base
+    const pulseAmplitude = this.config.listeningPulseAmplitude ?? 35; // Configurable amplitude
+    const pulsePhase = (Date.now() * pulseSpeed) % (Math.PI * 2);
+    const glowWidth = baseGlowWidth + Math.sin(pulsePhase) * pulseAmplitude;
+
+    // Calculate rectangle dimensions
+    const rectWidth = width - padding * 2;
+    const rectHeight = height - padding * 2;
+    const cornerRadius = 12;
+
+    // Save the current state
+    ctx.save();
+
+    // Draw multiple layers for gradient effect from edge inward
+    const layers = 8;
+    for (let i = 0; i < layers; i++) {
+      const layerProgress = i / (layers - 1);
+      const inset = glowWidth * layerProgress;
+
+      // Calculate opacity for this layer (stronger at edges)
+      const layerOpacity = (1 - layerProgress) * 0.5 * transitionOpacity;
+
+      ctx.strokeStyle =
+        this.config.avatarColor +
+        Math.round(layerOpacity * 255)
+          .toString(16)
+          .padStart(2, '0');
+      ctx.lineWidth = 3;
+
+      // Add glow to outer layers
+      if (i < 3) {
+        ctx.shadowBlur = 10 - i * 3;
+        ctx.shadowColor = this.config.avatarColor;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.beginPath();
+      ctx.roundRect(
+        padding + inset,
+        padding + inset,
+        rectWidth - inset * 2,
+        rectHeight - inset * 2,
+        Math.max(1, cornerRadius - inset * 0.5)
+      );
+      ctx.stroke();
+    }
+
+    // Add a strong edge highlight
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.config.avatarColor;
+    ctx.strokeStyle =
+      this.config.avatarColor +
+      Math.round(0.6 * transitionOpacity * 255)
+        .toString(16)
+        .padStart(2, '0');
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(padding, padding, rectWidth, rectHeight, cornerRadius);
+    ctx.stroke();
+
+    // Reset shadow
+    ctx.shadowBlur = 0;
+
+    // Restore the context state
+    ctx.restore();
   }
 
   private updateStateTransition(): void {

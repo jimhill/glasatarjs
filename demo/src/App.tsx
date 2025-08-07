@@ -17,6 +17,14 @@ function App() {
   const [avatarFadeWithAudio, setAvatarFadeWithAudio] = useState(true);
   const [avatarState, setAvatarState] = useState<AvatarState>('speaking');
   const [avatarShape, setAvatarShape] = useState<AvatarShape>('square');
+  const [listeningPulseBase, setListeningPulseBase] = useState(50);
+  const [listeningPulseAmplitude, setListeningPulseAmplitude] = useState(35);
+  const [listeningPulseSpeed, setListeningPulseSpeed] = useState(0.002);
+  const [thinkingBorderWidth, setThinkingBorderWidth] = useState(6);
+  const [thinkingBorderSpeed, setThinkingBorderSpeed] = useState(0.8);
+  const [thinkingBorderLength, setThinkingBorderLength] = useState(0.15);
+  const [thinkingBorderTrailSegments, setThinkingBorderTrailSegments] =
+    useState(10);
   const [backgroundColor, setBackgroundColor] = useState('#1a1a2e');
   const [backgroundType, setBackgroundType] = useState<
     'color' | 'radial-gradient' | 'linear-gradient' | 'image'
@@ -95,8 +103,7 @@ function App() {
       >
         <Glasatar
           audioStream={audioStream}
-          width={400}
-          height={400}
+          width={300}
           texture={texture}
           glassOpacity={glassOpacity}
           refractionStrength={refractionStrength}
@@ -109,6 +116,13 @@ function App() {
           avatarFadeWithAudio={avatarFadeWithAudio}
           avatarState={avatarState}
           avatarShape={avatarShape}
+          listeningPulseBase={listeningPulseBase}
+          listeningPulseAmplitude={listeningPulseAmplitude}
+          listeningPulseSpeed={listeningPulseSpeed}
+          thinkingBorderWidth={thinkingBorderWidth}
+          thinkingBorderSpeed={thinkingBorderSpeed}
+          thinkingBorderLength={thinkingBorderLength}
+          thinkingBorderTrailSegments={thinkingBorderTrailSegments}
           backgroundColor={backgroundColor}
           backgroundType={backgroundType}
           backgroundGradient={{
@@ -208,7 +222,7 @@ function App() {
               <input
                 type="range"
                 min="0"
-                max="20"
+                max="50"
                 step="0.5"
                 value={blurAmount}
                 onChange={e => setBlurAmount(parseFloat(e.target.value))}
@@ -255,15 +269,162 @@ function App() {
                 className="select-input"
               >
                 <option value="speaking">Speaking</option>
-                <option value="listening">Listening (coming soon)</option>
+                <option value="listening">Listening</option>
                 <option value="thinking">Thinking</option>
               </select>
               <p className="control-description">
                 Controls the avatar&apos;s visual state. Speaking mode responds
-                to audio input, listening shows a subtle pulse, and thinking
-                displays a rotating border animation.
+                to audio input, listening shows a pulsing inner glow, and
+                thinking displays a rotating border animation.
               </p>
             </div>
+
+            {/* Listening State Pulse Settings - Only show when listening state is selected */}
+            {avatarState === 'listening' && (
+              <>
+                <div>
+                  <label className="control-label">
+                    Listening Pulse Size: {listeningPulseBase}px
+                  </label>
+                  <input
+                    type="range"
+                    min="10"
+                    max="100"
+                    value={listeningPulseBase}
+                    onChange={e =>
+                      setListeningPulseBase(parseInt(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Base width of the inner glow effect
+                  </p>
+                </div>
+
+                <div>
+                  <label className="control-label">
+                    Listening Pulse Range: ±{listeningPulseAmplitude}px
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="60"
+                    value={listeningPulseAmplitude}
+                    onChange={e =>
+                      setListeningPulseAmplitude(parseInt(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    How much the glow expands and contracts
+                  </p>
+                </div>
+
+                <div>
+                  <label className="control-label">
+                    Listening Pulse Speed:{' '}
+                    {(listeningPulseSpeed * 1000).toFixed(1)}
+                  </label>
+                  <input
+                    type="range"
+                    min="0.0005"
+                    max="0.005"
+                    step="0.0001"
+                    value={listeningPulseSpeed}
+                    onChange={e =>
+                      setListeningPulseSpeed(parseFloat(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Speed of the pulsing animation
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Thinking State Border Settings - Only show when thinking state is selected */}
+            {avatarState === 'thinking' && (
+              <>
+                <div>
+                  <label className="control-label">
+                    Border Width: {thinkingBorderWidth}px
+                  </label>
+                  <input
+                    type="range"
+                    min="2"
+                    max="15"
+                    value={thinkingBorderWidth}
+                    onChange={e =>
+                      setThinkingBorderWidth(parseInt(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Width of the rotating border
+                  </p>
+                </div>
+
+                <div>
+                  <label className="control-label">
+                    Border Speed: {thinkingBorderSpeed.toFixed(1)}
+                  </label>
+                  <input
+                    type="range"
+                    min="0.2"
+                    max="2.0"
+                    step="0.1"
+                    value={thinkingBorderSpeed}
+                    onChange={e =>
+                      setThinkingBorderSpeed(parseFloat(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Speed of border rotation (pixels per frame)
+                  </p>
+                </div>
+
+                <div>
+                  <label className="control-label">
+                    Border Length: {(thinkingBorderLength * 100).toFixed(0)}%
+                  </label>
+                  <input
+                    type="range"
+                    min="0.05"
+                    max="0.5"
+                    step="0.01"
+                    value={thinkingBorderLength}
+                    onChange={e =>
+                      setThinkingBorderLength(parseFloat(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Length of the rotating segment
+                  </p>
+                </div>
+
+                <div>
+                  <label className="control-label">
+                    Trail Segments: {thinkingBorderTrailSegments}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    value={thinkingBorderTrailSegments}
+                    onChange={e =>
+                      setThinkingBorderTrailSegments(parseInt(e.target.value))
+                    }
+                    className="range-input"
+                  />
+                  <p className="control-description">
+                    Number of trailing segments for the fade effect
+                  </p>
+                </div>
+              </>
+            )}
 
             {/* Avatar Color */}
             <div>
@@ -635,12 +796,18 @@ function MyApp() {
       
       <Glasatar
         audioStream={audioStream}
-        width={500}
-        height={500}
+        width={300}
         texture="reeded"
         avatarColor="#00c7fc"
         avatarState="speaking" // 'speaking', 'listening', or 'thinking'
         avatarShape="circle" // 'square' or 'circle'
+        listeningPulseBase={50} // Base width of listening glow
+        listeningPulseAmplitude={35} // Pulse range  
+        listeningPulseSpeed={0.002} // Animation speed
+        thinkingBorderWidth={6} // Border width for thinking
+        thinkingBorderSpeed={0.8} // Rotation speed
+        thinkingBorderLength={0.15} // Segment length (0-1)
+        thinkingBorderTrailSegments={10} // Trail segments
         backgroundType="linear-gradient"
         backgroundGradient={{
           centerColor: "#c4bc00",
@@ -811,7 +978,7 @@ function MyApp() {
                 </td>
                 <td>
                   Avatar visual state - speaking responds to audio, listening
-                  shows pulse, thinking shows rotating border
+                  shows pulsing inner glow, thinking shows rotating border
                 </td>
               </tr>
               <tr>
@@ -828,6 +995,93 @@ function MyApp() {
                   Avatar shape - circle for traditional avatars, square for
                   modern UI elements
                 </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>listeningPulseBase</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>50</code>
+                </td>
+                <td>
+                  Base width of the inner glow effect in listening state
+                  (pixels)
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>listeningPulseAmplitude</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>35</code>
+                </td>
+                <td>How much the glow expands and contracts (pixels)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>listeningPulseSpeed</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0.002</code>
+                </td>
+                <td>Speed of the pulsing animation (lower = slower)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>thinkingBorderWidth</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>6</code>
+                </td>
+                <td>Width of the rotating border in thinking state (pixels)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>thinkingBorderSpeed</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0.8</code>
+                </td>
+                <td>Speed of border rotation (pixels per frame)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>thinkingBorderLength</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0.15</code>
+                </td>
+                <td>Length of the rotating segment (0-1 proportion)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>thinkingBorderTrailSegments</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>10</code>
+                </td>
+                <td>Number of trailing segments for fade effect</td>
               </tr>
               <tr>
                 <td>

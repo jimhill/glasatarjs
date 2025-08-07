@@ -33,6 +33,17 @@ export interface GlasatarConfig {
   avatarState?: AvatarState; // defaults to 'speaking'
   avatarShape?: AvatarShape; // defaults to 'square'
 
+  // Listening state animation settings
+  listeningPulseBase?: number; // defaults to 50 - base width of the inner glow
+  listeningPulseAmplitude?: number; // defaults to 35 - how much the glow pulses
+  listeningPulseSpeed?: number; // defaults to 0.002 - speed of pulsing
+
+  // Thinking state animation settings
+  thinkingBorderWidth?: number; // defaults to 6 - width of the rotating border
+  thinkingBorderSpeed?: number; // defaults to 0.8 - speed of border rotation (pixels per frame)
+  thinkingBorderLength?: number; // defaults to 0.15 - length of the rotating segment (0-1 proportion)
+  thinkingBorderTrailSegments?: number; // defaults to 10 - number of trailing segments
+
   // Background configuration (optional with sensible defaults)
   backgroundColor?: string; // defaults to '#000000'
   backgroundType?: 'color' | 'radial-gradient' | 'linear-gradient' | 'image'; // defaults to 'color'
