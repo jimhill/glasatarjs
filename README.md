@@ -51,20 +51,28 @@ function App() {
   return (
     <Glasatar
       audioStream={audioStream}
-      width={800}
-      height={400}
-      texture="arctic"
+      width={500}
+      height={500}
+      texture="reeded"
       glassOpacity={0.95}
-      refractionStrength={1.0}
-      blurAmount={3.0}
-      avatarColor="#4A90E2"
-      avatarSize={80}
-      avatarSensitivity={1.0}
-      avatarExpansion={2.0}
-      avatarSmoothing={0.25}
-      avatarFadeWithAudio={false}
-      backgroundColor="#000000"
-      backgroundType="color"
+      refractionStrength={20.0}
+      blurAmount={15.0}
+      avatarColor="#00c7fc"
+      avatarSize={37}
+      avatarSensitivity={1.8}
+      avatarExpansion={49.4}
+      avatarSmoothing={0.23}
+      avatarFadeWithAudio={true}
+      backgroundColor="#1a1a2e"
+      backgroundType="linear-gradient"
+      backgroundGradient={{
+        centerColor: '#c4bc00',
+        edgeColor: '#ff8647',
+        angle: 343,
+      }}
+      backgroundRotation={true}
+      backgroundRotationSpeed={10}
+      backgroundScale={1.5}
     />
   );
 }
@@ -82,20 +90,28 @@ const canvas = document.getElementById('visualizer');
 
 // Initialize renderer
 const renderer = new GlastarJS(canvas, {
-  width: 800,
-  height: 400,
-  texture: 'arctic',
+  width: 500,
+  height: 500,
+  texture: 'reeded',
   glassOpacity: 0.95,
-  refractionStrength: 1.0,
-  blurAmount: 3.0,
-  avatarColor: '#4A90E2',
-  avatarSize: 80,
-  avatarSensitivity: 1.0,
-  avatarExpansion: 2.0,
-  avatarSmoothing: 0.25,
-  avatarFadeWithAudio: false,
-  backgroundColor: '#000000',
-  backgroundType: 'color',
+  refractionStrength: 20.0,
+  blurAmount: 15.0,
+  avatarColor: '#00c7fc',
+  avatarSize: 37,
+  avatarSensitivity: 1.8,
+  avatarExpansion: 49.4,
+  avatarSmoothing: 0.23,
+  avatarFadeWithAudio: true,
+  backgroundColor: '#1a1a2e',
+  backgroundType: 'linear-gradient',
+  backgroundGradient: {
+    centerColor: '#c4bc00',
+    edgeColor: '#ff8647',
+    angle: 343,
+  },
+  backgroundRotation: true,
+  backgroundRotationSpeed: 10,
+  backgroundScale: 1.5,
 });
 
 // Start rendering
@@ -301,6 +317,25 @@ export class GlasatarComponent implements OnInit, OnDestroy {
 
 <canvas bind:this={canvas}></canvas>
 ```
+
+## Testing
+
+### Testing Built Files Locally
+
+Before publishing to npm, you can test the built library files locally to ensure everything works correctly:
+
+```bash
+# Build library and run demo with built files
+npm run test:built-files
+```
+
+This command:
+
+1. Builds the library files to the `dist` directory
+2. Starts a local dev server on port 5174 that uses the built files instead of source files
+3. Allows you to test exactly what will be published to npm
+
+This is particularly useful for catching bundling issues that might not appear when running the regular development server.
 
 ## Contributing
 

@@ -678,16 +678,15 @@ var _GlastarJS = class _GlastarJS {
       speed: this.config.backgroundRotationSpeed,
       scale: this.config.backgroundScale,
     });
+    this.drawBackground(ctx, width, height);
     if (
       this.backgroundDirty ||
-      this.lastBackgroundConfig !== currentBackgroundConfig ||
-      this.config.backgroundRotation
+      this.lastBackgroundConfig !== currentBackgroundConfig
     ) {
-      this.drawBackground(ctx, width, height);
       this.backgroundDirty = false;
       this.lastBackgroundConfig = currentBackgroundConfig;
-      this.textureNeedsUpdate = true;
     }
+    this.textureNeedsUpdate = true;
     const centerX = width / 2;
     const centerY = height / 2;
     const baseSize = this.config.avatarSize;

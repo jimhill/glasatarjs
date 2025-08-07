@@ -1,6 +1,6 @@
 {
   "name": "@jimhill/glasatarjs",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A beautiful WebGL-based voice visualizer that recreates the effect of textured privacy glass",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,6 +10,7 @@
     "build:lib": "node build.mjs",
     "build:demo": "vite build",
     "preview": "vite preview",
+    "test:built-files": "npm run build:lib && vite --config vite.config.test-built.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",

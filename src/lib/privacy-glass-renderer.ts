@@ -229,17 +229,20 @@ export class GlastarJS {
       scale: this.config.backgroundScale,
     });
 
+    // Always clear and redraw the entire canvas to prevent avatar trails
+    // Draw background first
+    this.drawBackground(ctx, width, height);
+
     if (
       this.backgroundDirty ||
-      this.lastBackgroundConfig !== currentBackgroundConfig ||
-      this.config.backgroundRotation
+      this.lastBackgroundConfig !== currentBackgroundConfig
     ) {
-      // Draw background based on type (only when needed)
-      this.drawBackground(ctx, width, height);
       this.backgroundDirty = false;
       this.lastBackgroundConfig = currentBackgroundConfig;
-      this.textureNeedsUpdate = true;
     }
+
+    // Mark texture for update since we're redrawing
+    this.textureNeedsUpdate = true;
 
     // Avatar position (center)
     const centerX = width / 2;
