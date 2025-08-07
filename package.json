@@ -96,11 +96,13 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./core": {
       "import": "./core.js",
-      "types": "./core.d.ts"
+      "types": "./core.d.ts",
+      "default": "./core.js"
     }
   }
 }
