@@ -12,7 +12,32 @@ export class GlastarJS {
   private gl: WebGLRenderingContext | WebGL2RenderingContext;
   private program: WebGLProgram | null = null;
   private uniforms: ShaderUniforms;
-  private config: GlasatarConfig;
+  private config: {
+    width: number;
+    height: number;
+    texture: TextureType;
+    glassOpacity: number;
+    refractionStrength: number;
+    blurAmount: number;
+    fps: number;
+    avatarColor: string;
+    avatarSize: number;
+    avatarSensitivity: number;
+    avatarExpansion: number;
+    avatarSmoothing: number;
+    avatarFadeWithAudio: boolean;
+    backgroundColor: string;
+    backgroundType: 'color' | 'radial-gradient' | 'linear-gradient' | 'image';
+    backgroundGradient: {
+      centerColor: string;
+      edgeColor: string;
+      angle: number;
+    };
+    backgroundImage?: string;
+    backgroundRotation: boolean;
+    backgroundRotationSpeed: number;
+    backgroundScale: number;
+  };
   private audioAnalyzer: AudioAnalyzer | null = null;
   private animationId: number | null = null;
   private isDisposed: boolean = false;
@@ -58,14 +83,18 @@ export class GlastarJS {
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
-      backgroundGradient: config.backgroundGradient || {
-        centerColor: '#4A90E2',
-        edgeColor: '#1a1a2e',
-        angle: 45,
+      backgroundGradient: {
+        centerColor: config.backgroundGradient?.centerColor || '#4A90E2',
+        edgeColor: config.backgroundGradient?.edgeColor || '#1a1a2e',
+        angle: config.backgroundGradient?.angle ?? 45,
       },
       backgroundImage: config.backgroundImage,
-      backgroundRotation: config.backgroundRotation || false,
-      backgroundRotationSpeed: config.backgroundRotationSpeed || 10,
+      backgroundRotation: config.backgroundRotation ?? true,
+      // If backgroundRotation is false, we set the rotation speed to 0 regardless of the backgroundRotationSpeed
+      backgroundRotationSpeed:
+        config.backgroundRotation === false
+          ? 0
+          : (config.backgroundRotationSpeed ?? 10),
       backgroundScale: config.backgroundScale || 1.0,
     };
 
@@ -480,7 +509,24 @@ export class GlastarJS {
   }
 
   updateConfig(config: Partial<GlasatarConfig>): void {
-    this.config = { ...this.config, ...config };
+    this.config = {
+      ...this.config,
+      ...config,
+      // Handle nested backgroundGradient properly
+      backgroundGradient: config.backgroundGradient
+        ? {
+            centerColor:
+              config.backgroundGradient.centerColor ||
+              this.config.backgroundGradient.centerColor,
+            edgeColor:
+              config.backgroundGradient.edgeColor ||
+              this.config.backgroundGradient.edgeColor,
+            angle:
+              config.backgroundGradient.angle ??
+              this.config.backgroundGradient.angle,
+          }
+        : this.config.backgroundGradient,
+    };
 
     // Mark background as dirty if any background-related config changed
     const backgroundKeys = [

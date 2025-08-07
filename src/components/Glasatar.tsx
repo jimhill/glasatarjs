@@ -1,10 +1,22 @@
 import React, { useRef, useEffect } from 'react';
-import { GlastarJS, GlasatarConfig } from '../lib';
+import { GlastarJS, GlasatarConfig, TextureType } from '../lib';
 
 export interface GlasatarProps extends Partial<GlasatarConfig> {
+  // The audio stream is essential for the component to work
   audioStream?: MediaStream | null;
+
+  // Common optional props
   className?: string;
   style?: React.CSSProperties;
+}
+
+// Props that are commonly needed for a good experience
+export interface GlasatarRecommendedProps extends GlasatarProps {
+  width: number;
+  height: number;
+  texture: TextureType;
+  avatarColor: string;
+  backgroundType: 'color' | 'radial-gradient' | 'linear-gradient' | 'image';
 }
 
 export const Glasatar: React.FC<GlasatarProps> = ({

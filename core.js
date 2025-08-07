@@ -1,4 +1,6 @@
 var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __propIsEnum = Object.prototype.propertyIsEnumerable;
@@ -20,6 +22,7 @@ var __spreadValues = (a, b) => {
     }
   return a;
 };
+var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
 // src/lib/shaders.ts
 var vertexShaderSource = `
@@ -527,6 +530,7 @@ var _GlastarJS = class _GlastarJS {
         this.animationId = requestAnimationFrame(this.render);
       }
     };
+    var _a, _b, _c, _d, _e, _f;
     this.canvas = canvas;
     this.config = {
       width: config.width || 800,
@@ -544,14 +548,29 @@ var _GlastarJS = class _GlastarJS {
       avatarFadeWithAudio: config.avatarFadeWithAudio || false,
       backgroundColor: config.backgroundColor || '#000000',
       backgroundType: config.backgroundType || 'color',
-      backgroundGradient: config.backgroundGradient || {
-        centerColor: '#4A90E2',
-        edgeColor: '#1a1a2e',
-        angle: 45,
+      backgroundGradient: {
+        centerColor:
+          ((_a = config.backgroundGradient) == null
+            ? void 0
+            : _a.centerColor) || '#4A90E2',
+        edgeColor:
+          ((_b = config.backgroundGradient) == null ? void 0 : _b.edgeColor) ||
+          '#1a1a2e',
+        angle:
+          (_d = (_c = config.backgroundGradient) == null ? void 0 : _c.angle) !=
+          null
+            ? _d
+            : 45,
       },
       backgroundImage: config.backgroundImage,
-      backgroundRotation: config.backgroundRotation || false,
-      backgroundRotationSpeed: config.backgroundRotationSpeed || 10,
+      backgroundRotation: (_e = config.backgroundRotation) != null ? _e : true,
+      // If backgroundRotation is false, we set the rotation speed to 0 regardless of the backgroundRotationSpeed
+      backgroundRotationSpeed:
+        config.backgroundRotation === false
+          ? 0
+          : (_f = config.backgroundRotationSpeed) != null
+            ? _f
+            : 10,
       backgroundScale: config.backgroundScale || 1,
     };
     const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
@@ -876,7 +895,27 @@ var _GlastarJS = class _GlastarJS {
     this.audioAnalyzer.connectStream(stream);
   }
   updateConfig(config) {
-    this.config = __spreadValues(__spreadValues({}, this.config), config);
+    var _a;
+    this.config = __spreadProps(
+      __spreadValues(__spreadValues({}, this.config), config),
+      {
+        // Handle nested backgroundGradient properly
+        backgroundGradient: config.backgroundGradient
+          ? {
+              centerColor:
+                config.backgroundGradient.centerColor ||
+                this.config.backgroundGradient.centerColor,
+              edgeColor:
+                config.backgroundGradient.edgeColor ||
+                this.config.backgroundGradient.edgeColor,
+              angle:
+                (_a = config.backgroundGradient.angle) != null
+                  ? _a
+                  : this.config.backgroundGradient.angle,
+            }
+          : this.config.backgroundGradient,
+      }
+    );
     const backgroundKeys = [
       'backgroundColor',
       'backgroundType',
