@@ -169,7 +169,8 @@ describe('GlastarJS', () => {
 
   describe('performance optimizations', () => {
     beforeEach(() => {
-      renderer = new GlastarJS(mockCanvas);
+      // Set backgroundRotation to false to test dirty flag optimization
+      renderer = new GlastarJS(mockCanvas, { backgroundRotation: false });
     });
 
     it('should implement dirty flag for background redraw', () => {
@@ -181,7 +182,7 @@ describe('GlastarJS', () => {
 
       drawBackgroundSpy.mockClear();
 
-      // Second render with same config should not redraw background
+      // Second render with same config should not redraw background when rotation is off
       (renderer as any).drawAvatar(0.5);
       expect(drawBackgroundSpy).not.toHaveBeenCalled();
     });

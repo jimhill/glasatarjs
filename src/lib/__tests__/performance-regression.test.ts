@@ -134,7 +134,8 @@ describe.skipIf(process.env.CI === 'true')(
       });
 
       it('should handle background dirty flags efficiently', () => {
-        renderer = new GlastarJS(mockCanvas);
+        // Set backgroundRotation to false to test dirty flag optimization
+        renderer = new GlastarJS(mockCanvas, { backgroundRotation: false });
         const drawBackgroundSpy = vi.spyOn(renderer as any, 'drawBackground');
 
         // First render should draw background
@@ -143,7 +144,7 @@ describe.skipIf(process.env.CI === 'true')(
 
         drawBackgroundSpy.mockClear();
 
-        // Subsequent renders without config changes should skip background
+        // Subsequent renders without config changes should skip background when rotation is off
         const startTime = performance.now();
         for (let i = 0; i < 10; i++) {
           (renderer as any).drawAvatar(0.5 + i * 0.01);

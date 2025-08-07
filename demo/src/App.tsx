@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Glasatar, TextureType } from '../../src';
 import Icon from './Icon';
+import { CodeBlock } from './CodeBlock';
 
 function App() {
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
@@ -60,6 +61,23 @@ function App() {
 
   return (
     <div className="app-container">
+      <a
+        href="https://github.com/jimhill/glasatarjs"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="github-link github-link-top"
+        aria-label="View on GitHub"
+      >
+        <svg
+          className="github-icon"
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="currentColor"
+        >
+          <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+        </svg>
+      </a>
       <header className="app-header">
         <Icon />
         <h1 className="app-title">
@@ -73,8 +91,8 @@ function App() {
       <div className="visualizer-container">
         <Glasatar
           audioStream={audioStream}
-          width={500}
-          height={500}
+          width={400}
+          height={400}
           texture={texture}
           glassOpacity={glassOpacity}
           refractionStrength={refractionStrength}
@@ -515,7 +533,7 @@ function App() {
         </div>
       </div>
 
-      <div className="info-section">
+      <div className="info-section info-section--margin-top-large">
         <h3 className="info-title">How it works:</h3>
         <ul className="info-list">
           <li>
@@ -548,8 +566,408 @@ function App() {
         </ul>
       </div>
 
+      <div className="info-section">
+        <h3 className="info-title">How to use in React:</h3>
+        <CodeBlock
+          language="tsx"
+          code={`import React, { useState } from 'react';
+import { Glasatar } from '@jimhill/glasatarjs';
+
+function MyApp() {
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
+
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    setAudioStream(stream);
+  };
+
+  return (
+    <div>
+      <button onClick={startRecording}>Start Recording</button>
+      
+      <Glasatar
+        audioStream={audioStream}
+        width={500}
+        height={500}
+        texture="reeded"
+        avatarColor="#00c7fc"
+        backgroundType="linear-gradient"
+        backgroundGradient={{
+          centerColor: "#c4bc00",
+          edgeColor: "#ff8647",
+          angle: 343
+        }}
+      />
+    </div>
+  );
+}`}
+        />
+      </div>
+
+      <div className="info-section">
+        <h3 className="info-title">Props Reference:</h3>
+        <div className="props-table-container">
+          <table className="props-table">
+            <thead>
+              <tr>
+                <th>Prop</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colSpan={4} className="section-header">
+                  Essential
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>audioStream</code>
+                </td>
+                <td>
+                  <code>MediaStream | null</code>
+                </td>
+                <td>
+                  <code>null</code>
+                </td>
+                <td>Audio stream from getUserMedia for voice reactivity</td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="section-header">
+                  Canvas Dimensions
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>width</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>800</code>
+                </td>
+                <td>Canvas width in pixels</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>height</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>600</code>
+                </td>
+                <td>Canvas height in pixels</td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="section-header">
+                  Glass Effect
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>texture</code>
+                </td>
+                <td>
+                  <code>TextureType</code>
+                </td>
+                <td>
+                  <code>&apos;arctic&apos;</code>
+                </td>
+                <td>
+                  &apos;arctic&apos; | &apos;cathedral&apos; |
+                  &apos;autumn&apos; | &apos;flemish&apos; | &apos;ripple&apos;
+                  | &apos;reeded&apos; | &apos;vintage&apos; |
+                  &apos;forest&apos;
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>glassOpacity</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0.95</code>
+                </td>
+                <td>Glass transparency (0-1)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>refractionStrength</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>1.0</code>
+                </td>
+                <td>How much the glass distorts the view</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>blurAmount</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>3.0</code>
+                </td>
+                <td>Blur amount applied through glass</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>fps</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>60</code>
+                </td>
+                <td>Target frame rate</td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="section-header">
+                  Avatar
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarColor</code>
+                </td>
+                <td>
+                  <code>string</code>
+                </td>
+                <td>
+                  <code>&apos;#4A90E2&apos;</code>
+                </td>
+                <td>Color of the voice-reactive avatar</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarSize</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>80</code>
+                </td>
+                <td>Base size of avatar when silent</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarSensitivity</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>1.0</code>
+                </td>
+                <td>How responsive avatar is to voice</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarExpansion</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>2.0</code>
+                </td>
+                <td>Maximum size multiplier when speaking</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarSmoothing</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0.25</code>
+                </td>
+                <td>Transition smoothness (lower = smoother)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>avatarFadeWithAudio</code>
+                </td>
+                <td>
+                  <code>boolean</code>
+                </td>
+                <td>
+                  <code>false</code>
+                </td>
+                <td>Avatar becomes transparent when silent</td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="section-header">
+                  Background
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundColor</code>
+                </td>
+                <td>
+                  <code>string</code>
+                </td>
+                <td>
+                  <code>&apos;#000000&apos;</code>
+                </td>
+                <td>Solid background color (hex)</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundType</code>
+                </td>
+                <td>
+                  <code>string</code>
+                </td>
+                <td>
+                  <code>&apos;color&apos;</code>
+                </td>
+                <td>
+                  &apos;color&apos; | &apos;radial-gradient&apos; |
+                  &apos;linear-gradient&apos; | &apos;image&apos;
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundGradient</code>
+                </td>
+                <td>
+                  <code>object</code>
+                </td>
+                <td>
+                  <code>{'{centerColor, edgeColor, angle}'}</code>
+                </td>
+                <td>Gradient colors and angle for gradient backgrounds</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundImage</code>
+                </td>
+                <td>
+                  <code>string</code>
+                </td>
+                <td>
+                  <code>undefined</code>
+                </td>
+                <td>Image URL for image backgrounds</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundRotation</code>
+                </td>
+                <td>
+                  <code>boolean</code>
+                </td>
+                <td>
+                  <code>true</code>
+                </td>
+                <td>Whether background rotates</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundRotationSpeed</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>0</code>
+                </td>
+                <td>Rotation speed in degrees/second</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>backgroundScale</code>
+                </td>
+                <td>
+                  <code>number</code>
+                </td>
+                <td>
+                  <code>1.0</code>
+                </td>
+                <td>Background scale multiplier</td>
+              </tr>
+
+              <tr>
+                <td colSpan={4} className="section-header">
+                  React
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <code>className</code>
+                </td>
+                <td>
+                  <code>string</code>
+                </td>
+                <td>
+                  <code>undefined</code>
+                </td>
+                <td>CSS class name for the canvas</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>style</code>
+                </td>
+                <td>
+                  <code>CSSProperties</code>
+                </td>
+                <td>
+                  <code>undefined</code>
+                </td>
+                <td>Inline styles for the canvas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <footer className="app-footer">
-        <p>Built with WebGL, Web Audio API, React, and TypeScript</p>
+        <div className="app-footer__me">
+          <p>
+            Built by Jim Hill. Contact me on{' '}
+            <a
+              href="https://x.com/jimhilluk"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              X
+            </a>{' '}
+            or{' '}
+            <a
+              href="https://bsky.app/profile/jimhill.uk"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              BlueSky
+            </a>
+          </p>
+        </div>
+        <p className="app-footer__text">
+          Built with WebGL, Web Audio API, React, and TypeScript + thanks to{' '}
+          <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">
+            Claude Code
+          </a>
+        </p>
         <a
           href="https://github.com/jimhill/glasatarjs"
           target="_blank"
