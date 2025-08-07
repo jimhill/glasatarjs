@@ -140,7 +140,7 @@ function App() {
                 : 'recording-indicator--inactive'
             }`}
           />
-          {isRecording ? 'Stop Recording' : 'Start Recording'}
+          {isRecording ? 'Stop Microphone' : 'Use Mic For AudioStream'}
         </button>
       </div>
 
@@ -568,6 +568,9 @@ function App() {
 
       <div className="info-section">
         <h3 className="info-title">How to use in React:</h3>
+        <h2 className="info-step-title">Step 1: Install the package</h2>
+        <CodeBlock language="bash" code={`npm install @jimhill/glasatarjs`} />
+        <h2 className="info-step-title">Step 2: Import the component</h2>
         <CodeBlock
           language="tsx"
           code={`import React, { useState } from 'react';
@@ -583,7 +586,7 @@ function MyApp() {
 
   return (
     <div>
-      <button onClick={startRecording}>Start Recording</button>
+      <button onClick={startRecording}>Use Mic For AudioStream</button>
       
       <Glasatar
         audioStream={audioStream}

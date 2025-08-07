@@ -375,6 +375,13 @@ select option {
   margin-bottom: 15px;
 }
 
+.info-step-title {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
 .info-list {
   padding-left: 20px;
   line-height: 1.6;
