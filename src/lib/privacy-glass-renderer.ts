@@ -437,17 +437,18 @@ export class GlastarJS {
     this.lastAvatarSize = expandedSize;
   }
 
+  /* eslint-disable no-unused-vars */
   private drawListeningAvatar(
-    ctx: CanvasRenderingContext2D,
+    _ctx: CanvasRenderingContext2D,
     _centerX: number,
     _centerY: number,
-    _baseSize: number,
-    __transitionOpacity: number = 1
+    _baseSize: number
   ): void {
     // No avatar circle in listening state - just the glass effect
     // Mark as needing update to keep the glass effect animating
     this.textureNeedsUpdate = true;
   }
+  /* eslint-enable no-unused-vars */
 
   private drawThinkingAvatar(
     ctx: CanvasRenderingContext2D,
