@@ -15,7 +15,7 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
       try {
         const html = await codeToHtml(code.trim(), {
           lang: language,
-          theme: 'github-dark',
+          theme: 'laserwave',
         });
         setHtmlCode(html);
       } catch (error) {

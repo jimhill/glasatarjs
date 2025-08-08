@@ -61,6 +61,186 @@ function App() {
     }
   };
 
+  // Share functionality
+  const generateShareUrl = () => {
+    const params = new URLSearchParams();
+
+    // Add all state values in alphabetical order
+    params.set('avatarColor', avatarColor);
+    params.set('avatarExpansion', avatarExpansion.toString());
+    params.set('avatarFadeWithAudio', avatarFadeWithAudio.toString());
+    params.set('avatarShape', avatarShape);
+    params.set('avatarSize', avatarSize.toString());
+    params.set('avatarSensitivity', avatarSensitivity.toString());
+    params.set('avatarSmoothing', avatarSmoothing.toString());
+    params.set('avatarState', avatarState);
+    params.set('backgroundColor', backgroundColor);
+    params.set('backgroundImageUrl', backgroundImageUrl);
+    params.set('backgroundRotation', backgroundRotation.toString());
+    params.set('backgroundRotationSpeed', backgroundRotationSpeed.toString());
+    params.set('backgroundScale', backgroundScale.toString());
+    params.set('backgroundType', backgroundType);
+    params.set('blurAmount', blurAmount.toString());
+    params.set('glassOpacity', glassOpacity.toString());
+    params.set('gradientAngle', gradientAngle.toString());
+    params.set('gradientCenter', gradientCenter);
+    params.set('gradientEdge', gradientEdge);
+    params.set('listeningPulseAmplitude', listeningPulseAmplitude.toString());
+    params.set('listeningPulseBase', listeningPulseBase.toString());
+    params.set('listeningPulseSpeed', listeningPulseSpeed.toString());
+    params.set('refractionStrength', refractionStrength.toString());
+    params.set('texture', texture);
+    params.set('thinkingBorderLength', thinkingBorderLength.toString());
+    params.set('thinkingBorderSpeed', thinkingBorderSpeed.toString());
+    params.set(
+      'thinkingBorderTrailSegments',
+      thinkingBorderTrailSegments.toString()
+    );
+    params.set('thinkingBorderWidth', thinkingBorderWidth.toString());
+
+    return `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  };
+
+  const handleShare = async () => {
+    const shareUrl = generateShareUrl();
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      // Show success feedback (could add a toast here)
+      alert('Share URL copied to clipboard!');
+    } catch (error) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Share URL copied to clipboard!');
+    }
+  };
+
+  // Load state from URL parameters on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Parse and set each parameter if it exists
+    if (urlParams.has('avatarColor')) {
+      setAvatarColor(urlParams.get('avatarColor') || '#00c7fc');
+    }
+    if (urlParams.has('avatarExpansion')) {
+      setAvatarExpansion(parseFloat(urlParams.get('avatarExpansion') || '27'));
+    }
+    if (urlParams.has('avatarFadeWithAudio')) {
+      setAvatarFadeWithAudio(urlParams.get('avatarFadeWithAudio') === 'true');
+    }
+    if (urlParams.has('avatarShape')) {
+      setAvatarShape((urlParams.get('avatarShape') as AvatarShape) || 'square');
+    }
+    if (urlParams.has('avatarSize')) {
+      setAvatarSize(parseInt(urlParams.get('avatarSize') || '19'));
+    }
+    if (urlParams.has('avatarSensitivity')) {
+      setAvatarSensitivity(
+        parseFloat(urlParams.get('avatarSensitivity') || '1.2')
+      );
+    }
+    if (urlParams.has('avatarSmoothing')) {
+      setAvatarSmoothing(
+        parseFloat(urlParams.get('avatarSmoothing') || '0.34')
+      );
+    }
+    if (urlParams.has('avatarState')) {
+      setAvatarState(
+        (urlParams.get('avatarState') as AvatarState) || 'speaking'
+      );
+    }
+    if (urlParams.has('backgroundColor')) {
+      setBackgroundColor(urlParams.get('backgroundColor') || '#1a1a2e');
+    }
+    if (urlParams.has('backgroundImageUrl')) {
+      setBackgroundImageUrl(
+        urlParams.get('backgroundImageUrl') ||
+          'https://picsum.photos/500/500?random=1'
+      );
+    }
+    if (urlParams.has('backgroundRotation')) {
+      setBackgroundRotation(urlParams.get('backgroundRotation') === 'true');
+    }
+    if (urlParams.has('backgroundRotationSpeed')) {
+      setBackgroundRotationSpeed(
+        parseInt(urlParams.get('backgroundRotationSpeed') || '10')
+      );
+    }
+    if (urlParams.has('backgroundScale')) {
+      setBackgroundScale(parseFloat(urlParams.get('backgroundScale') || '1.5'));
+    }
+    if (urlParams.has('backgroundType')) {
+      setBackgroundType(
+        (urlParams.get('backgroundType') as
+          | 'color'
+          | 'radial-gradient'
+          | 'linear-gradient'
+          | 'image') || 'linear-gradient'
+      );
+    }
+    if (urlParams.has('blurAmount')) {
+      setBlurAmount(parseFloat(urlParams.get('blurAmount') || '15'));
+    }
+    if (urlParams.has('gradientAngle')) {
+      setGradientAngle(parseInt(urlParams.get('gradientAngle') || '343'));
+    }
+    if (urlParams.has('gradientCenter')) {
+      setGradientCenter(urlParams.get('gradientCenter') || '#c4bc00');
+    }
+    if (urlParams.has('gradientEdge')) {
+      setGradientEdge(urlParams.get('gradientEdge') || '#ff8647');
+    }
+    if (urlParams.has('listeningPulseAmplitude')) {
+      setListeningPulseAmplitude(
+        parseInt(urlParams.get('listeningPulseAmplitude') || '35')
+      );
+    }
+    if (urlParams.has('listeningPulseBase')) {
+      setListeningPulseBase(
+        parseInt(urlParams.get('listeningPulseBase') || '50')
+      );
+    }
+    if (urlParams.has('listeningPulseSpeed')) {
+      setListeningPulseSpeed(
+        parseFloat(urlParams.get('listeningPulseSpeed') || '0.002')
+      );
+    }
+    if (urlParams.has('refractionStrength')) {
+      setRefractionStrength(
+        parseFloat(urlParams.get('refractionStrength') || '20')
+      );
+    }
+    if (urlParams.has('texture')) {
+      setTexture((urlParams.get('texture') as TextureType) || 'reeded');
+    }
+    if (urlParams.has('thinkingBorderLength')) {
+      setThinkingBorderLength(
+        parseFloat(urlParams.get('thinkingBorderLength') || '0.15')
+      );
+    }
+    if (urlParams.has('thinkingBorderSpeed')) {
+      setThinkingBorderSpeed(
+        parseFloat(urlParams.get('thinkingBorderSpeed') || '0.8')
+      );
+    }
+    if (urlParams.has('thinkingBorderTrailSegments')) {
+      setThinkingBorderTrailSegments(
+        parseInt(urlParams.get('thinkingBorderTrailSegments') || '10')
+      );
+    }
+    if (urlParams.has('thinkingBorderWidth')) {
+      setThinkingBorderWidth(
+        parseInt(urlParams.get('thinkingBorderWidth') || '6')
+      );
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (audioStream) {
@@ -156,7 +336,24 @@ function App() {
                 : 'recording-indicator--inactive'
             }`}
           />
-          {isRecording ? 'Stop Microphone' : 'Use Mic For AudioStream'}
+          {isRecording ? 'Stop Microphone' : 'Use Mic For Audio'}
+        </button>
+        <button
+          onClick={handleShare}
+          className="share-button"
+          aria-label="Share current design"
+          title="Copy shareable URL to clipboard"
+        >
+          <svg
+            className="share-icon"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="currentColor"
+          >
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.50-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
+          </svg>
+          <span>Share Your Design</span>
         </button>
       </div>
 
@@ -236,23 +433,6 @@ function App() {
           <h3 className="control-section__title">Avatar Settings</h3>
 
           <div className="control-section__content">
-            {/* Avatar Shape */}
-            <div>
-              <label className="control-label">Avatar Shape</label>
-              <select
-                value={avatarShape}
-                onChange={e => setAvatarShape(e.target.value as AvatarShape)}
-                className="select-input"
-              >
-                <option value="square">Square</option>
-                <option value="circle">Circle</option>
-              </select>
-              <p className="control-description">
-                Circle shapes work well for traditional avatars, square shapes
-                for modern UI elements
-              </p>
-            </div>
-
             {/* Avatar State */}
             <div>
               <label htmlFor="avatarState" className="control-label">
@@ -272,6 +452,23 @@ function App() {
                 Controls the avatar&apos;s visual state. Speaking mode responds
                 to audio input, listening shows a pulsing inner glow, and
                 thinking displays a rotating border animation.
+              </p>
+            </div>
+
+            {/* Avatar Shape */}
+            <div>
+              <label className="control-label">Avatar Shape</label>
+              <select
+                value={avatarShape}
+                onChange={e => setAvatarShape(e.target.value as AvatarShape)}
+                className="select-input"
+              >
+                <option value="square">Square</option>
+                <option value="circle">Circle</option>
+              </select>
+              <p className="control-description">
+                Circle shapes work well for traditional avatars, square shapes
+                for modern UI elements
               </p>
             </div>
 
@@ -736,7 +933,7 @@ function App() {
       </div>
 
       <div className="info-section info-section--margin-top-large">
-        <h3 className="info-title">How it works:</h3>
+        <h3 className="info-title">How it works</h3>
         <ul className="info-list">
           <li>
             The <strong>glass texture</strong> is fixed and doesn&apos;t change
@@ -769,7 +966,7 @@ function App() {
       </div>
 
       <div className="info-section">
-        <h3 className="info-title">How to use in React:</h3>
+        <h3 className="info-title">How to use in React</h3>
         <h2 className="info-step-title">Step 1: Install the package</h2>
         <CodeBlock language="bash" code={`npm install @jimhill/glasatarjs`} />
         <h2 className="info-step-title">Step 2: Import the component</h2>
@@ -788,7 +985,7 @@ function MyApp() {
 
   return (
     <div>
-      <button onClick={startRecording}>Use Mic For AudioStream</button>
+      <button onClick={startRecording}>Use Mic For Audio</button>
       
       <Glasatar
         audioStream={audioStream}
@@ -822,7 +1019,7 @@ function MyApp() {
       </div>
 
       <div className="info-section">
-        <h3 className="info-title">Props Reference:</h3>
+        <h3 className="info-title">Props Reference</h3>
         <div className="props-table-container">
           <table className="props-table">
             <thead>
